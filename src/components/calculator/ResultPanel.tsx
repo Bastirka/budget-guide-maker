@@ -4,7 +4,11 @@ import { useState } from "react";
 import { CalculatorResult, BudgetTier } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/i18n/LanguageContext";
-import { tierKey } from "@/i18n/keys";
+import {
+  tierKey, websiteTypeKey, sectionTierKey, featureKey,
+  materialKey, designLevelKey, urgencyKey, assetKey,
+} from "@/i18n/keys";
+import { BreakdownItem } from "@/lib/pricing";
 
 interface ResultPanelProps {
   result: CalculatorResult | null;
@@ -189,7 +193,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         <div className="space-y-1.5">
           {result.breakdown.map((b, i) => (
             <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-border/50 last:border-0">
-              <span className="text-muted-foreground">{b.label}</span>
+              <span className="text-muted-foreground">{localizeBreakdown(b, t)}</span>
               <span className="font-mono font-semibold text-foreground tabular-nums">
                 {typeof b.amount === "number" ? `+${b.amount}€` : b.amount}
               </span>
