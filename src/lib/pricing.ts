@@ -1,5 +1,5 @@
 // ============================================
-// REĀLISTISKA CENU SISTĒMA — LV web agency
+// LOW-BUDGET CENU SISTĒMA — startup klientiem
 // Visas cenas EUR. Bāzes cenas ir RANGE (min/max).
 // ============================================
 
@@ -24,43 +24,43 @@ export const WEBSITE_TYPES: Record<
   landing: {
     label: "Landing Page",
     description: "Viena lapa ar skaidru CTA — produkts, pasākums, kampaņa",
-    range: { min: 200, max: 350 },
+    range: { min: 70, max: 120 },
     icon: "Rocket",
   },
   business: {
     label: "Biznesa mājaslapa",
     description: "Klasiska uzņēmuma vizītkarte ar pakalpojumiem un kontaktiem",
-    range: { min: 300, max: 600 },
+    range: { min: 100, max: 200 },
     icon: "Building2",
   },
   restaurant: {
     label: "Restorāns / kafejnīca",
     description: "Ēdienkarte, galda rezervācija, atrašanās vieta",
-    range: { min: 400, max: 800 },
+    range: { min: 130, max: 270 },
     icon: "UtensilsCrossed",
   },
   portfolio: {
     label: "Portfolio",
     description: "Radoša persona vai studija — darbu galerija un par mani",
-    range: { min: 250, max: 500 },
+    range: { min: 80, max: 170 },
     icon: "Palette",
   },
   ecommerce: {
     label: "E-veikals",
     description: "Pilna pirkšanas plūsma — produkti, grozs, maksājumi",
-    range: { min: 700, max: 1500 },
+    range: { min: 230, max: 500 },
     icon: "ShoppingBag",
   },
   booking: {
     label: "Booking sistēma",
     description: "Pierakstu/rezervāciju sistēma ar kalendāru un apmaksu",
-    range: { min: 600, max: 1200 },
+    range: { min: 200, max: 400 },
     icon: "CalendarCheck",
   },
   custom: {
     label: "Custom risinājums",
     description: "Web app, dashboard, SaaS, sarežģīta integrācija",
-    range: { min: 1000, max: 2500 },
+    range: { min: 330, max: 830 },
     icon: "Sparkles",
   },
 };
@@ -68,13 +68,13 @@ export const WEBSITE_TYPES: Record<
 // ===== SADAĻU SKAITS =====
 export const SECTION_TIERS = [
   { id: "1-3", label: "1–3 sadaļas", price: 0 },
-  { id: "4-6", label: "4–6 sadaļas", price: 100 },
-  { id: "7-10", label: "7–10 sadaļas", price: 200 },
-  { id: "10+", label: "10+ sadaļas", price: 300 },
+  { id: "4-6", label: "4–6 sadaļas", price: 30 },
+  { id: "7-10", label: "7–10 sadaļas", price: 70 },
+  { id: "10+", label: "10+ sadaļas", price: 100 },
 ] as const;
 export type SectionTierId = (typeof SECTION_TIERS)[number]["id"];
 
-// ===== FUNKCIJAS — reālas cenas LV mazai web studio =====
+// ===== FUNKCIJAS — low-budget cenas =====
 export interface FeatureDef {
   id: string;
   label: string;
@@ -85,58 +85,58 @@ export interface FeatureDef {
 
 export const FEATURES: FeatureDef[] = [
   // Essential
-  { id: "contact_form", label: "Kontaktforma ar e-pastu", price: 40, category: "essential" },
-  { id: "google_maps", label: "Google Maps integrācija", price: 30, category: "essential" },
-  { id: "social_links", label: "Sociālo tīklu integrācija", price: 20, category: "essential" },
-  { id: "cookie_banner", label: "Sīkdatņu paziņojums (GDPR)", price: 40, category: "essential" },
-  { id: "favicon_og", label: "Favicon + OG attēli", price: 30, category: "essential" },
+  { id: "contact_form", label: "Kontaktu forma", price: 7, category: "essential" },
+  { id: "whatsapp", label: "WhatsApp / Telegram", price: 7, category: "essential" },
+  { id: "google_maps", label: "Google Maps", price: 3, category: "essential" },
+  { id: "gallery", label: "Galerija", price: 13, category: "essential" },
+  { id: "reviews", label: "Atsauksmes", price: 13, category: "essential" },
+  { id: "google_reviews", label: "Google Reviews integrācija", price: 13, category: "essential" },
 
   // Marketing
-  { id: "seo_basic", label: "Pamata SEO (meta, sitemap, robots)", price: 80, category: "marketing" },
-  { id: "seo_advanced", label: "Advanced SEO + struktūrdati", price: 180, category: "marketing" },
-  { id: "analytics", label: "Google Analytics / Plausible", price: 40, category: "marketing" },
-  { id: "blog", label: "Blogs / jaunumu sadaļa", price: 150, category: "marketing" },
-  { id: "newsletter", label: "Newsletter abonēšana (Mailchimp/Brevo)", price: 80, category: "marketing" },
-  { id: "multilang", label: "Daudzvalodu (2 valodas)", price: 200, category: "marketing" },
+  { id: "animations", label: "Animācijas", price: 27, category: "marketing" },
+  { id: "multilang", label: "Multi-language", price: 40, category: "marketing" },
+  { id: "blog", label: "Blogs", price: 33, category: "marketing" },
+  { id: "seo", label: "SEO optimizācija", price: 33, category: "marketing" },
+  { id: "domain_hosting", label: "Domēns / hostings", price: 17, category: "marketing" },
+  { id: "performance", label: "Performance optimizācija", price: 27, category: "marketing" },
 
   // E-commerce
-  { id: "stripe", label: "Stripe maksājumi", price: 150, category: "ecommerce" },
-  { id: "product_catalog", label: "Produktu katalogs (līdz 30)", price: 200, category: "ecommerce" },
-  { id: "cart_checkout", label: "Grozs + checkout plūsma", price: 250, category: "ecommerce" },
-  { id: "invoice", label: "Automātiski rēķini PDF", price: 120, category: "ecommerce" },
+  { id: "booking_form", label: "Rezervāciju forma", price: 40, category: "ecommerce" },
+  { id: "online_orders", label: "Online pasūtījumi", price: 70, category: "ecommerce" },
+  { id: "ecommerce", label: "E-commerce funkcionalitāte", price: 100, category: "ecommerce" },
+  { id: "payments", label: "Maksājumi (Stripe/Paysera)", price: 70, category: "ecommerce" },
 
   // Advanced
-  { id: "auth", label: "Lietotāju reģistrācija/login", price: 200, category: "advanced" },
-  { id: "admin_panel", label: "Admin panelis saturam (CMS)", price: 300, category: "advanced" },
-  { id: "booking_calendar", label: "Rezervāciju kalendārs", price: 250, category: "advanced" },
-  { id: "live_chat", label: "Live chat (Tawk/Crisp)", price: 50, category: "advanced" },
-  { id: "ai_chatbot", label: "AI chatbot integrācija", price: 350, category: "advanced" },
+  { id: "admin_panel", label: "Admin panelis", price: 80, category: "advanced" },
+  { id: "logo_design", label: "Logo dizains", price: 50, category: "advanced" },
+  { id: "texts", label: "Tekstu rakstīšana", price: 33, category: "advanced" },
+  { id: "images", label: "Bildes / fotogrāfijas", price: 27, category: "advanced" },
 ];
 
-// ===== MATERIĀLI =====
+// ===== MATERIĀLI (ja klientam nav) =====
 export const MATERIALS = [
-  { id: "logo", label: "Logo dizains", price: 100 },
-  { id: "texts", label: "Tekstu rakstīšana", price: 80 },
-  { id: "images", label: "Attēli / fotogrāfijas", price: 80 },
-  { id: "all", label: "Viss no nulles (logo + teksti + bildes)", price: 200 },
+  { id: "logo", label: "Logo dizains", price: 33 },
+  { id: "texts", label: "Tekstu rakstīšana", price: 27 },
+  { id: "images", label: "Attēli / fotogrāfijas", price: 27 },
+  { id: "all", label: "Viss no nulles (logo + teksti + bildes)", price: 70 },
 ] as const;
 export type MaterialId = (typeof MATERIALS)[number]["id"];
 
 // ===== DIZAINS =====
 export const DESIGN_LEVELS = [
   { id: "simple", label: "Vienkāršs", description: "Template-based, ātri", price: 0 },
-  { id: "modern", label: "Moderns", description: "Pielāgots dizains", price: 100 },
-  { id: "premium", label: "Premium", description: "Unikāls, ar animācijām", price: 250 },
-  { id: "custom", label: "Custom UI/UX", description: "No nulles, ar prototipēšanu", price: 400 },
+  { id: "modern", label: "Moderns", description: "Pielāgots dizains", price: 33 },
+  { id: "premium", label: "Premium", description: "Unikāls, ar animācijām", price: 80 },
+  { id: "custom", label: "Custom UI/UX", description: "No nulles, ar prototipēšanu", price: 130 },
 ] as const;
 export type DesignLevelId = (typeof DESIGN_LEVELS)[number]["id"];
 
 // ===== STEIDZAMĪBA =====
 export const URGENCY_LEVELS = [
   { id: "normal", label: "Normāli (3–4 nedēļas)", price: 0 },
-  { id: "fast", label: "Paātrināti (2 nedēļas)", price: 100 },
-  { id: "urgent", label: "Steidzami (1 nedēļa)", price: 200 },
-  { id: "asap", label: "ASAP (3–5 dienas)", price: 300 },
+  { id: "fast", label: "Paātrināti (2 nedēļas)", price: 33 },
+  { id: "urgent", label: "Steidzami (1 nedēļa)", price: 70 },
+  { id: "asap", label: "ASAP (3–5 dienas)", price: 100 },
 ] as const;
 export type UrgencyId = (typeof URGENCY_LEVELS)[number]["id"];
 
@@ -156,15 +156,15 @@ export interface CalculatorInput {
 export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
 
 export interface CalculatorResult {
-  base: PriceRange;        // bāzes diapazons no website tipa
-  addons: number;          // visi pieskaitījumi (fiksēti)
-  range: PriceRange;       // gala diapazons (base + addons)
-  average: number;         // vidējā cena
+  base: PriceRange;
+  addons: number;
+  range: PriceRange;
+  average: number;
   tier: BudgetTier;
   tierLabel: string;
   tierDescription: string;
-  cost: number;            // mūsu izmaksas (30%)
-  profit: number;          // mūsu peļņa (70%)
+  cost: number;
+  profit: number;
   breakdown: { label: string; amount: number | string }[];
   suggestionsCheaper: string[];
   suggestionsBetter: string[];
@@ -174,29 +174,29 @@ export const TIER_INFO: Record<BudgetTier, { label: string; description: string;
   budget: {
     label: "Budget",
     description: "Vienkāršs, bet profesionāls risinājums maziem biznesiem un startupiem.",
-    range: "līdz 400€",
+    range: "līdz 150€",
   },
   standard: {
     label: "Standard",
     description: "Lielākajai daļai biznesu — labs balanss starp cenu un funkcionalitāti.",
-    range: "400–800€",
+    range: "150–400€",
   },
   advanced: {
     label: "Advanced",
     description: "Bagātīgs ar funkcijām, custom dizains, augstas kvalitātes risinājums.",
-    range: "800–1500€",
+    range: "400–800€",
   },
   premium: {
     label: "Premium",
     description: "Sarežģīti risinājumi, custom UI/UX, pilna funkcionalitāte.",
-    range: "1500€+",
+    range: "800€+",
   },
 };
 
 function tierFromAverage(avg: number): BudgetTier {
-  if (avg < 400) return "budget";
-  if (avg < 800) return "standard";
-  if (avg < 1500) return "advanced";
+  if (avg < 150) return "budget";
+  if (avg < 400) return "standard";
+  if (avg < 800) return "advanced";
   return "premium";
 }
 
@@ -264,35 +264,37 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
 
   // Ieteikumi — kā samazināt
   const suggestionsCheaper: string[] = [];
-  if (input.designLevel === "custom") suggestionsCheaper.push("Izvēlieties Premium dizainu, nevis Custom — ietaupījums ~150€");
-  else if (input.designLevel === "premium") suggestionsCheaper.push("Modernais dizains tā vietā ietaupīs ~150€");
+  if (input.designLevel === "custom") suggestionsCheaper.push("Izvēlieties Premium dizainu, nevis Custom — ietaupījums ~50€");
+  else if (input.designLevel === "premium") suggestionsCheaper.push("Modernais dizains tā vietā ietaupīs ~47€");
 
-  if (input.urgency === "asap") suggestionsCheaper.push("Ja varat pagaidīt 2 nedēļas — ietaupījums 200€");
-  else if (input.urgency === "urgent") suggestionsCheaper.push("Normāls termiņš ietaupīs 200€");
+  if (input.urgency === "asap") suggestionsCheaper.push("Ja varat pagaidīt 2 nedēļas — ietaupījums 67€");
+  else if (input.urgency === "urgent") suggestionsCheaper.push("Normāls termiņš ietaupīs 70€");
 
   if (selectedFeatures.length > 5)
     suggestionsCheaper.push(`Jums ir ${selectedFeatures.length} funkcijas — apsveriet sākumā tikai būtiskākās`);
 
   if (input.materials.includes("all"))
-    suggestionsCheaper.push("Ja sagādāsiet daļu materiālu paši (piem. fotos) — ietaupījums līdz 80€");
+    suggestionsCheaper.push("Ja sagādāsiet daļu materiālu paši (piem. fotos) — ietaupījums līdz 27€");
 
-  if (input.sectionTier === "10+") suggestionsCheaper.push("Mazāk sadaļu (4–6) ietaupīs 200€");
+  if (input.sectionTier === "10+") suggestionsCheaper.push("Mazāk sadaļu (4–6) ietaupīs 70€");
 
   // Ieteikumi — kā uzlabot
   const suggestionsBetter: string[] = [];
   const has = (id: string) => input.features.includes(id);
-  if (!has("seo_basic") && !has("seo_advanced"))
-    suggestionsBetter.push("Pievienojiet pamata SEO (+80€) — bez tā Google jūs neatradīs");
-  if (!has("analytics"))
-    suggestionsBetter.push("Analytics (+40€) — bez datiem nezināsiet, kas strādā");
-  if (input.designLevel === "simple")
-    suggestionsBetter.push("Modernais dizains (+100€) — pirmais iespaids ir izšķirošs");
+  if (!has("seo"))
+    suggestionsBetter.push("Pievienojiet SEO optimizāciju (+33€) — bez tā Google jūs neatradīs");
   if (!has("contact_form"))
-    suggestionsBetter.push("Kontaktforma (+40€) — vienkāršākais veids saņemt pieprasījumus");
-  if (input.websiteType === "ecommerce" && !has("stripe"))
-    suggestionsBetter.push("Stripe maksājumi (+150€) — bez tā e-veikals nestrādās");
-  if (input.websiteType === "booking" && !has("booking_calendar"))
-    suggestionsBetter.push("Rezervāciju kalendārs (+250€) — booking sistēmas pamats");
+    suggestionsBetter.push("Kontaktu forma (+7€) — vienkāršākais veids saņemt pieprasījumus");
+  if (!has("whatsapp"))
+    suggestionsBetter.push("WhatsApp poga (+7€) — klienti raksta tieši, nevis aiziet");
+  if (input.designLevel === "simple")
+    suggestionsBetter.push("Modernais dizains (+33€) — pirmais iespaids ir izšķirošs");
+  if (input.websiteType === "ecommerce" && !has("payments"))
+    suggestionsBetter.push("Maksājumi (+70€) — bez tā e-veikals nestrādās");
+  if (input.websiteType === "booking" && !has("booking_form"))
+    suggestionsBetter.push("Rezervāciju forma (+40€) — booking sistēmas pamats");
+  if (!has("performance"))
+    suggestionsBetter.push("Performance optimizācija (+27€) — ātrāka lapa = vairāk klientu");
 
   return {
     base,
