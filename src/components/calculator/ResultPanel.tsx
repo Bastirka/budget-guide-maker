@@ -23,6 +23,28 @@ const TIER_STYLES: Record<BudgetTier, { color: string; bg: string; ring: string 
 
 const TIER_ORDER: BudgetTier[] = ["budget", "standard", "advanced", "premium"];
 
+function localizeBreakdown(b: BreakdownItem, t: (k: any) => string): string {
+  switch (b.kind) {
+    case "base":
+      return `${t(websiteTypeKey(b.websiteType).label)} ${t("breakdown.base")}`;
+    case "section":
+      return t(sectionTierKey(b.id));
+    case "feature":
+      return t(featureKey(b.id));
+    case "material":
+      return `${t("breakdown.materials")}: ${t(materialKey(b.id))}`;
+    case "design":
+      return `${t("breakdown.design")}: ${t(designLevelKey(b.id).label)}`;
+    case "urgency":
+      return t(urgencyKey(b.id));
+    case "asset":
+      return t(assetKey(b.id));
+    default:
+      return (b as { label: string }).label;
+  }
+}
+
+
 export const ResultPanel = ({ result }: ResultPanelProps) => {
   const { t } = useLanguage();
   const [adminMode, setAdminMode] = useState(false);
