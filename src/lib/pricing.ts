@@ -299,55 +299,73 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     }
   }
 
+  // === IEKŠĒJĀS cenas (raw) — netiek rādītas klientam ===
+  const internalMin = Math.max(50, base.min + addons - discounts);
+  const internalMax = Math.max(60, base.max + addons - discounts);
+  const internalAvg = Math.round((internalMin + internalMax) / 2);
+  const internalPrice = internalAvg;
+
+  // === KLIENTA cenas (ar multiplier) — TĀS RĀDA UI ===
   const range: PriceRange = {
-    min: Math.max(50, base.min + addons - discounts),
-    max: Math.max(60, base.max + addons - discounts),
+    min: Math.round(internalMin * PRICE_MULTIPLIER),
+    max: Math.round(internalMax * PRICE_MULTIPLIER),
   };
-  const average = Math.round((range.min + range.max) / 2);
+  const average = Math.round(internalAvg * PRICE_MULTIPLIER);
+
+  // Recommended package — nedaudz dārgāks "Labākā izvēle" variants
+  const recommended = Math.round(average * RECOMMENDED_MULTIPLIER);
+
+  // Tipiska tirgus cena — nedaudz plašāks "trust" diapazons (±15%)
+  const marketRange: PriceRange = {
+    min: Math.round(range.min * 0.92),
+    max: Math.round(range.max * 1.18),
+  };
+
   const tier = tierFromAverage(average);
   const tierInfo = TIER_INFO[tier];
 
-  // Iekšējie aprēķini
-  const cost = Math.round(average * 0.3);
+  // Iekšējie aprēķini (no IEKŠĒJĀS cenas, lai peļņa ir reālistiska)
+  const cost = Math.round(internalPrice * COST_RATIO);
+  // Peļņa = klienta cena - mūsu izmaksas
   const profit = average - cost;
 
   // Uzturēšana (atsevišķa mēneša maksa)
   const maint = MAINTENANCE_LEVELS.find((m) => m.id === input.maintenance);
   const monthlyMaintenance = maint?.monthly ?? 0;
 
-  // Ieteikumi — kā samazināt
+  // Ieteikumi — kā samazināt (cenas klientam = ×2)
   const suggestionsCheaper: string[] = [];
-  if (input.designLevel === "custom") suggestionsCheaper.push("Izvēlieties Premium dizainu, nevis Custom — ietaupījums ~50€");
-  else if (input.designLevel === "premium") suggestionsCheaper.push("Modernais dizains tā vietā ietaupīs ~47€");
+  if (input.designLevel === "custom") suggestionsCheaper.push("Izvēlieties Premium dizainu, nevis Custom — ietaupījums ~100€");
+  else if (input.designLevel === "premium") suggestionsCheaper.push("Modernais dizains tā vietā ietaupīs ~94€");
 
-  if (input.urgency === "asap") suggestionsCheaper.push("Ja varat pagaidīt 2 nedēļas — ietaupījums 67€");
-  else if (input.urgency === "urgent") suggestionsCheaper.push("Normāls termiņš ietaupīs 70€");
+  if (input.urgency === "asap") suggestionsCheaper.push("Ja varat pagaidīt 2 nedēļas — ietaupījums ~134€");
+  else if (input.urgency === "urgent") suggestionsCheaper.push("Normāls termiņš ietaupīs ~140€");
 
   if (selectedFeatures.length > 5)
     suggestionsCheaper.push(`Jums ir ${selectedFeatures.length} funkcijas — apsveriet sākumā tikai būtiskākās`);
 
   if (input.materials.includes("all"))
-    suggestionsCheaper.push("Ja sagādāsiet daļu materiālu paši (piem. fotos) — ietaupījums līdz 27€");
+    suggestionsCheaper.push("Ja sagādāsiet daļu materiālu paši (piem. fotos) — ietaupījums līdz ~54€");
 
-  if (input.sectionTier === "10+") suggestionsCheaper.push("Mazāk sadaļu (4–6) ietaupīs 70€");
+  if (input.sectionTier === "10+") suggestionsCheaper.push("Mazāk sadaļu (4–6) ietaupīs ~140€");
 
   // Ieteikumi — kā uzlabot
   const suggestionsBetter: string[] = [];
   const has = (id: string) => input.features.includes(id);
   if (!has("seo"))
-    suggestionsBetter.push("Pievienojiet SEO optimizāciju (+33€) — bez tā Google jūs neatradīs");
+    suggestionsBetter.push("Pievienojiet SEO optimizāciju — bez tā Google jūs neatradīs");
   if (!has("contact_form"))
-    suggestionsBetter.push("Kontaktu forma (+7€) — vienkāršākais veids saņemt pieprasījumus");
+    suggestionsBetter.push("Kontaktu forma — vienkāršākais veids saņemt pieprasījumus");
   if (!has("whatsapp"))
-    suggestionsBetter.push("WhatsApp poga (+7€) — klienti raksta tieši, nevis aiziet");
+    suggestionsBetter.push("WhatsApp poga — klienti raksta tieši, nevis aiziet");
   if (input.designLevel === "simple")
-    suggestionsBetter.push("Modernais dizains (+33€) — pirmais iespaids ir izšķirošs");
+    suggestionsBetter.push("Modernais dizains — pirmais iespaids ir izšķirošs");
   if (input.websiteType === "ecommerce" && !has("payments"))
-    suggestionsBetter.push("Maksājumi (+70€) — bez tā e-veikals nestrādās");
+    suggestionsBetter.push("Maksājumu integrācija — bez tā e-veikals nestrādās");
   if (input.websiteType === "booking" && !has("booking_form"))
-    suggestionsBetter.push("Rezervāciju forma (+40€) — booking sistēmas pamats");
+    suggestionsBetter.push("Rezervāciju forma — booking sistēmas pamats");
   if (!has("performance"))
-    suggestionsBetter.push("Performance optimizācija (+27€) — ātrāka lapa = vairāk klientu");
+    suggestionsBetter.push("Performance optimizācija — ātrāka lapa = vairāk klientu");
 
   return {
     base,
@@ -355,11 +373,14 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     discounts,
     range,
     average,
+    recommended,
+    marketRange,
     tier,
     tierLabel: tierInfo.label,
     tierDescription: tierInfo.description,
     cost,
     profit,
+    internalPrice,
     monthlyMaintenance,
     breakdown,
     suggestionsCheaper: suggestionsCheaper.slice(0, 4),
