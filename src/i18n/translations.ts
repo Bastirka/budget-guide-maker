@@ -76,6 +76,10 @@ export const translations = {
     "common.optional": "(neobligāti)",
     "common.required": "*",
     "common.perMonth": "/mēn.",
+    "breakdown.base": "(bāzes diapazons)",
+    "breakdown.materials": "Materiāli",
+    "breakdown.design": "Dizains",
+    "breakdown.haveAsset": "Ir",
 
     // Result panel
     "result.placeholder.title": "Sāciet ar mājaslapas tipu",
@@ -310,6 +314,10 @@ export const translations = {
     "common.optional": "(optional)",
     "common.required": "*",
     "common.perMonth": "/mo",
+    "breakdown.base": "(base range)",
+    "breakdown.materials": "Materials",
+    "breakdown.design": "Design",
+    "breakdown.haveAsset": "Have",
 
     // Result panel
     "result.placeholder.title": "Start by picking a website type",
