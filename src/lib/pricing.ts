@@ -186,13 +186,23 @@ export interface CalculatorResult {
   base: PriceRange;
   addons: number;
   discounts: number;
+  /** Klienta cenu diapazons (jau ar multiplier) — to RĀDA UI */
   range: PriceRange;
+  /** Klienta gala vidējā cena — galvenā parādītā cena */
   average: number;
+  /** Recommended package — nedaudz dārgāks variants */
+  recommended: number;
+  /** Tipiska tirgus cena — plašāks "trust" diapazons */
+  marketRange: PriceRange;
   tier: BudgetTier;
   tierLabel: string;
   tierDescription: string;
+  /** Iekšējās izmaksas (EUR) — tikai admin */
   cost: number;
+  /** Peļņa (EUR) — tikai admin */
   profit: number;
+  /** Iekšējā cena pirms multiplier — tikai admin */
+  internalPrice: number;
   monthlyMaintenance: number;
   breakdown: { label: string; amount: number | string }[];
   suggestionsCheaper: string[];
@@ -203,29 +213,29 @@ export const TIER_INFO: Record<BudgetTier, { label: string; description: string;
   budget: {
     label: "Budget",
     description: "Vienkāršs, bet profesionāls risinājums maziem biznesiem un startupiem.",
-    range: "līdz 150€",
+    range: "līdz 300€",
   },
   standard: {
     label: "Standard",
     description: "Lielākajai daļai biznesu — labs balanss starp cenu un funkcionalitāti.",
-    range: "150–400€",
+    range: "300–800€",
   },
   advanced: {
     label: "Advanced",
     description: "Bagātīgs ar funkcijām, custom dizains, augstas kvalitātes risinājums.",
-    range: "400–800€",
+    range: "800–1600€",
   },
   premium: {
     label: "Premium",
     description: "Sarežģīti risinājumi, custom UI/UX, pilna funkcionalitāte.",
-    range: "800€+",
+    range: "1600€+",
   },
 };
 
 function tierFromAverage(avg: number): BudgetTier {
-  if (avg < 150) return "budget";
-  if (avg < 400) return "standard";
-  if (avg < 800) return "advanced";
+  if (avg < 300) return "budget";
+  if (avg < 800) return "standard";
+  if (avg < 1600) return "advanced";
   return "premium";
 }
 
