@@ -50,7 +50,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Aplēstā cena
+              Jūsu mājaslapas cena
             </span>
             <div className={`px-3 py-1 rounded-full ring-1 ${style.bg} ${style.ring} ${style.color} text-xs font-semibold uppercase tracking-wider`}>
               {style.label}
