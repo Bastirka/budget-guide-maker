@@ -3,21 +3,50 @@ import { TrendingUp, TrendingDown, Sparkles, Lock, Eye, EyeOff } from "lucide-re
 import { useState } from "react";
 import { CalculatorResult, BudgetTier } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
+import {
+  tierKey, websiteTypeKey, sectionTierKey, featureKey,
+  materialKey, designLevelKey, urgencyKey, assetKey,
+} from "@/i18n/keys";
+import { BreakdownItem } from "@/lib/pricing";
 
 interface ResultPanelProps {
   result: CalculatorResult | null;
 }
 
-const TIER_STYLES: Record<BudgetTier, { color: string; bg: string; ring: string; label: string }> = {
-  budget:   { color: "text-tier-budget",   bg: "bg-tier-budget/10",   ring: "ring-tier-budget/30",   label: "Budget" },
-  standard: { color: "text-tier-standard", bg: "bg-tier-standard/10", ring: "ring-tier-standard/30", label: "Standard" },
-  advanced: { color: "text-tier-advanced", bg: "bg-tier-advanced/10", ring: "ring-tier-advanced/30", label: "Advanced" },
-  premium:  { color: "text-tier-premium",  bg: "bg-tier-premium/10",  ring: "ring-tier-premium/30",  label: "Premium" },
+const TIER_STYLES: Record<BudgetTier, { color: string; bg: string; ring: string }> = {
+  budget:   { color: "text-tier-budget",   bg: "bg-tier-budget/10",   ring: "ring-tier-budget/30" },
+  standard: { color: "text-tier-standard", bg: "bg-tier-standard/10", ring: "ring-tier-standard/30" },
+  advanced: { color: "text-tier-advanced", bg: "bg-tier-advanced/10", ring: "ring-tier-advanced/30" },
+  premium:  { color: "text-tier-premium",  bg: "bg-tier-premium/10",  ring: "ring-tier-premium/30" },
 };
 
 const TIER_ORDER: BudgetTier[] = ["budget", "standard", "advanced", "premium"];
 
+function localizeBreakdown(b: BreakdownItem, t: (k: any) => string): string {
+  switch (b.kind) {
+    case "base":
+      return `${t(websiteTypeKey(b.websiteType).label)} ${t("breakdown.base")}`;
+    case "section":
+      return t(sectionTierKey(b.id));
+    case "feature":
+      return t(featureKey(b.id));
+    case "material":
+      return `${t("breakdown.materials")}: ${t(materialKey(b.id))}`;
+    case "design":
+      return `${t("breakdown.design")}: ${t(designLevelKey(b.id).label)}`;
+    case "urgency":
+      return t(urgencyKey(b.id));
+    case "asset":
+      return t(assetKey(b.id));
+    default:
+      return (b as { label: string }).label;
+  }
+}
+
+
 export const ResultPanel = ({ result }: ResultPanelProps) => {
+  const { t } = useLanguage();
   const [adminMode, setAdminMode] = useState(false);
 
   if (!result) {
@@ -26,15 +55,14 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         <div className="w-12 h-12 rounded-full bg-secondary mx-auto flex items-center justify-center mb-4">
           <Sparkles className="w-5 h-5 text-muted-foreground" />
         </div>
-        <h3 className="font-display text-lg font-semibold mb-2">Sāciet ar mājaslapas tipu</h3>
-        <p className="text-sm text-muted-foreground">
-          Izvēlieties projekta veidu kreisajā pusē, lai redzētu cenu aprēķinu reāllaikā.
-        </p>
+        <h3 className="font-display text-lg font-semibold mb-2">{t("result.placeholder.title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("result.placeholder.text")}</p>
       </div>
     );
   }
 
   const style = TIER_STYLES[result.tier];
+  const tk = tierKey(result.tier);
 
   return (
     <motion.div
@@ -50,14 +78,13 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Jūsu mājaslapas cena
+              {t("result.heading")}
             </span>
             <div className={`px-3 py-1 rounded-full ring-1 ${style.bg} ${style.ring} ${style.color} text-xs font-semibold uppercase tracking-wider`}>
-              {style.label}
+              {t(tk.label)}
             </div>
           </div>
 
-          {/* Main client price */}
           <AnimatePresence mode="wait">
             <motion.div
               key={result.average}
@@ -72,46 +99,46 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                Tipiska tirgus cena šādam projektam:{" "}
+                {t("result.marketRange")}{" "}
                 <span className="text-foreground font-semibold tabular-nums">
                   {result.marketRange.min}€ – {result.marketRange.max}€
                 </span>
               </p>
               {result.discounts > 0 && (
                 <p className="text-xs text-success mt-1.5 font-medium">
-                  Ietaupījums no jūsu materiāliem: ~{Math.round(result.discounts * 2)}€
+                  {t("result.savings")}{Math.round(result.discounts * 2)}€
                 </p>
               )}
             </motion.div>
           </AnimatePresence>
 
-          {/* Tier scale */}
           <div className="mt-6 pt-6 border-t border-border">
             <div className="flex items-center justify-between gap-2">
-              {TIER_ORDER.map((t) => {
-                const active = t === result.tier;
-                const ts = TIER_STYLES[t];
+              {TIER_ORDER.map((tier) => {
+                const active = tier === result.tier;
+                const ts = TIER_STYLES[tier];
+                const tkr = tierKey(tier);
                 return (
-                  <div key={t} className="flex-1 text-center">
+                  <div key={tier} className="flex-1 text-center">
                     <div
                       className={`h-1.5 rounded-full mb-2 transition-all ${
                         active ? ts.bg.replace("/10", "") : "bg-secondary"
                       }`}
-                      style={active ? { backgroundColor: `hsl(var(--tier-${t}))` } : undefined}
+                      style={active ? { backgroundColor: `hsl(var(--tier-${tier}))` } : undefined}
                     />
                     <span className={`text-[10px] font-semibold uppercase tracking-wider ${active ? ts.color : "text-muted-foreground"}`}>
-                      {ts.label}
+                      {t(tkr.label)}
                     </span>
                   </div>
                 );
               })}
             </div>
-            <p className="text-xs text-muted-foreground mt-3 text-center">{result.tierDescription}</p>
+            <p className="text-xs text-muted-foreground mt-3 text-center">{t(tk.description)}</p>
           </div>
         </div>
       </div>
 
-      {/* RECOMMENDED PACKAGE — perceived value upsell */}
+      {/* RECOMMENDED PACKAGE */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -120,14 +147,14 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
       >
         <div className="absolute top-3 right-3">
           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider shadow-glow">
-            <Sparkles className="w-3 h-3" /> Labākā izvēle
+            <Sparkles className="w-3 h-3" /> {t("result.recommended.badge")}
           </span>
         </div>
         <div className="mb-1.5">
-          <h4 className="font-display font-semibold text-sm">Recommended pakete</h4>
+          <h4 className="font-display font-semibold text-sm">{t("result.recommended.title")}</h4>
         </div>
         <p className="text-xs text-muted-foreground mb-3 max-w-[80%]">
-          Premium dizains, prioritārs atbalsts, paplašinātas funkcijas — labākais ROI ilgtermiņā.
+          {t("result.recommended.text")}
         </p>
         <div className="flex items-baseline gap-2">
           <span className="text-3xl font-display font-bold text-foreground tabular-nums">
@@ -148,7 +175,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
                 <div className="w-7 h-7 rounded-lg bg-tier-budget/10 flex items-center justify-center">
                   <TrendingDown className="w-3.5 h-3.5 text-tier-budget" />
                 </div>
-                <h4 className="font-display font-semibold text-sm">Kā samazināt</h4>
+                <h4 className="font-display font-semibold text-sm">{t("result.cheaper")}</h4>
               </div>
               <ul className="space-y-2">
                 {result.suggestionsCheaper.map((s, i) => (
@@ -167,7 +194,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
                 <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="w-3.5 h-3.5 text-primary" />
                 </div>
-                <h4 className="font-display font-semibold text-sm">Kā uzlabot</h4>
+                <h4 className="font-display font-semibold text-sm">{t("result.better")}</h4>
               </div>
               <ul className="space-y-2">
                 {result.suggestionsBetter.map((s, i) => (
@@ -184,11 +211,11 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
 
       {/* BREAKDOWN */}
       <div className="rounded-xl border border-border bg-card p-4">
-        <h4 className="font-display font-semibold text-sm mb-3">Cenas sadalījums</h4>
+        <h4 className="font-display font-semibold text-sm mb-3">{t("result.breakdown")}</h4>
         <div className="space-y-1.5">
           {result.breakdown.map((b, i) => (
             <div key={i} className="flex items-center justify-between text-xs py-1.5 border-b border-border/50 last:border-0">
-              <span className="text-muted-foreground">{b.label}</span>
+              <span className="text-muted-foreground">{localizeBreakdown(b, t)}</span>
               <span className="font-mono font-semibold text-foreground tabular-nums">
                 {typeof b.amount === "number" ? `+${b.amount}€` : b.amount}
               </span>
@@ -197,13 +224,13 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         </div>
       </div>
 
-      {/* ADMIN — internal cost/profit */}
+      {/* ADMIN */}
       <div className="rounded-xl border border-dashed border-border bg-card/40 p-4">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Lock className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Iekšēji (admin)
+              {t("result.admin.title")}
             </span>
           </div>
           <Button
@@ -212,7 +239,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
             className="h-7 px-2 text-xs"
             onClick={() => setAdminMode((v) => !v)}
           >
-            {adminMode ? <><EyeOff className="w-3 h-3 mr-1" /> Slēpt</> : <><Eye className="w-3 h-3 mr-1" /> Rādīt</>}
+            {adminMode ? <><EyeOff className="w-3 h-3 mr-1" /> {t("result.admin.hide")}</> : <><Eye className="w-3 h-3 mr-1" /> {t("result.admin.show")}</>}
           </Button>
         </div>
         <AnimatePresence>
@@ -226,16 +253,16 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
             >
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="rounded-lg bg-secondary/50 p-3">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Izmaksas (30%)</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{t("result.admin.cost")}</div>
                   <div className="font-display font-bold text-lg text-destructive tabular-nums">{result.cost}€</div>
                 </div>
                 <div className="rounded-lg bg-secondary/50 p-3">
-                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Peļņa (70%)</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{t("result.admin.profit")}</div>
                   <div className="font-display font-bold text-lg text-success tabular-nums">{result.profit}€</div>
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground mt-2 italic">
-                Aprēķināts no vidējās cenas ({result.average}€). Klients to neredz.
+                {t("result.admin.note")}
               </p>
             </motion.div>
           )}

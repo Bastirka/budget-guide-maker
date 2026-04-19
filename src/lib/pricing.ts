@@ -182,6 +182,15 @@ export interface CalculatorInput {
 
 export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
 
+export type BreakdownItem =
+  | { kind: "base"; websiteType: WebsiteType; label: string; amount: string }
+  | { kind: "section"; id: SectionTierId; label: string; amount: number }
+  | { kind: "feature"; id: string; label: string; amount: number }
+  | { kind: "material"; id: MaterialId; label: string; amount: number }
+  | { kind: "design"; id: DesignLevelId; label: string; amount: number }
+  | { kind: "urgency"; id: UrgencyId; label: string; amount: number }
+  | { kind: "asset"; id: AssetId; label: string; amount: string };
+
 export interface CalculatorResult {
   base: PriceRange;
   addons: number;
@@ -204,7 +213,7 @@ export interface CalculatorResult {
   /** Iekšējā cena pirms multiplier — tikai admin */
   internalPrice: number;
   monthlyMaintenance: number;
-  breakdown: { label: string; amount: number | string }[];
+  breakdown: BreakdownItem[];
   suggestionsCheaper: string[];
   suggestionsBetter: string[];
 }
@@ -246,22 +255,22 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
   const base = { ...typeDef.range };
 
   let addons = 0;
-  const breakdown: CalculatorResult["breakdown"] = [
-    { label: `${typeDef.label} (bāzes diapazons)`, amount: `${base.min}–${base.max}€` },
+  const breakdown: BreakdownItem[] = [
+    { kind: "base", websiteType: input.websiteType, label: `${typeDef.label} (bāzes diapazons)`, amount: `${base.min}–${base.max}€` },
   ];
 
   // Sadaļas
   const sec = SECTION_TIERS.find((s) => s.id === input.sectionTier);
   if (sec && sec.price > 0) {
     addons += sec.price;
-    breakdown.push({ label: sec.label, amount: sec.price });
+    breakdown.push({ kind: "section", id: sec.id, label: sec.label, amount: sec.price });
   }
 
   // Funkcijas
   const selectedFeatures = FEATURES.filter((f) => input.features.includes(f.id));
   for (const f of selectedFeatures) {
     addons += f.price;
-    breakdown.push({ label: f.label, amount: f.price });
+    breakdown.push({ kind: "feature", id: f.id, label: f.label, amount: f.price });
   }
 
   // Materiāli — "all" pārraksta atsevišķos
@@ -271,7 +280,7 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     const m = MATERIALS.find((x) => x.id === id);
     if (m && m.price > 0) {
       addons += m.price;
-      breakdown.push({ label: `Materiāli: ${m.label}`, amount: m.price });
+      breakdown.push({ kind: "material", id: m.id, label: `Materiāli: ${m.label}`, amount: m.price });
     }
   }
 
@@ -279,14 +288,14 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
   const design = DESIGN_LEVELS.find((d) => d.id === input.designLevel);
   if (design && design.price > 0) {
     addons += design.price;
-    breakdown.push({ label: `Dizains: ${design.label}`, amount: design.price });
+    breakdown.push({ kind: "design", id: design.id, label: `Dizains: ${design.label}`, amount: design.price });
   }
 
   // Steidzamība
   const urg = URGENCY_LEVELS.find((u) => u.id === input.urgency);
   if (urg && urg.price > 0) {
     addons += urg.price;
-    breakdown.push({ label: urg.label, amount: urg.price });
+    breakdown.push({ kind: "urgency", id: urg.id, label: urg.label, amount: urg.price });
   }
 
   // Atlaide par materiāliem, kas klientam jau ir
@@ -295,7 +304,7 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     const a = ASSETS.find((x) => x.id === id);
     if (a) {
       discounts += a.discount;
-      breakdown.push({ label: `Ir ${a.label.toLowerCase().replace("ir ", "")}`, amount: `−${a.discount}€` });
+      breakdown.push({ kind: "asset", id: a.id, label: `Ir ${a.label.toLowerCase().replace("ir ", "")}`, amount: `−${a.discount}€` });
     }
   }
 
