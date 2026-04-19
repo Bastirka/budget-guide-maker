@@ -1,12 +1,14 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Zap, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface HeroProps {
   onStart: () => void;
 }
 
 export const Hero = ({ onStart }: HeroProps) => {
+  const { t } = useLanguage();
   return (
     <section className="relative pt-12 pb-10 sm:pt-16 sm:pb-14">
       <div className="container max-w-5xl text-center">
@@ -18,17 +20,16 @@ export const Hero = ({ onStart }: HeroProps) => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/60 backdrop-blur mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Reālas cenas · Latvijas tirgus · Bez slēptām maksām
+              {t("hero.badge")}
             </span>
           </div>
 
           <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4">
-            Cik maksā <span className="text-gradient">jūsu mājaslapa</span>?
+            {t("hero.titleA")} <span className="text-gradient">{t("hero.titleB")}</span>?
           </h1>
 
           <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
-            Atbildiet uz dažiem jautājumiem un saņemiet precīzu cenu diapazonu reāllaikā.
-            Pilns kopsavilkums un piedāvājums — bez reģistrācijas.
+            {t("hero.subtitle")}
           </p>
 
           <Button
@@ -36,16 +37,16 @@ export const Hero = ({ onStart }: HeroProps) => {
             size="lg"
             className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-glow group h-12 px-7 text-base"
           >
-            Sākt aprēķinu
+            {t("hero.cta")}
             <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
           </Button>
 
           {/* Trust badges */}
           <div className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
             {[
-              { icon: Zap, title: "Reāllaika aprēķins", text: "Cena mainās ar katru izvēli" },
-              { icon: Shield, title: "Bez saistībām", text: "Tikai indikatīva tāme" },
-              { icon: Sparkles, title: "Caurspīdīgs sadalījums", text: "Redzi par ko maksā" },
+              { icon: Zap, title: t("hero.badge1.title"), text: t("hero.badge1.text") },
+              { icon: Shield, title: t("hero.badge2.title"), text: t("hero.badge2.text") },
+              { icon: Sparkles, title: t("hero.badge3.title"), text: t("hero.badge3.text") },
             ].map((b, i) => (
               <motion.div
                 key={i}
