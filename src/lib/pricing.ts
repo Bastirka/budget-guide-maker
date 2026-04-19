@@ -122,6 +122,15 @@ export const MATERIALS = [
 ] as const;
 export type MaterialId = (typeof MATERIALS)[number]["id"];
 
+// ===== KAS JUMS JAU IR (atlaide, ja klients sniedz materiālus) =====
+export const ASSETS = [
+  { id: "design", label: "Ir dizains / mockup", discount: 30 },
+  { id: "logo", label: "Ir logo", discount: 13 },
+  { id: "texts", label: "Ir teksti gatavi", discount: 13 },
+  { id: "images", label: "Ir bildes / foto", discount: 10 },
+] as const;
+export type AssetId = (typeof ASSETS)[number]["id"];
+
 // ===== DIZAINS =====
 export const DESIGN_LEVELS = [
   { id: "simple", label: "Vienkāršs", description: "Template-based, ātri", price: 0 },
@@ -140,6 +149,14 @@ export const URGENCY_LEVELS = [
 ] as const;
 export type UrgencyId = (typeof URGENCY_LEVELS)[number]["id"];
 
+// ===== UZTURĒŠANA (mēneša maksa, neietilpst gala cenā) =====
+export const MAINTENANCE_LEVELS = [
+  { id: "none", label: "Nav nepieciešama", monthly: 0, description: "Es pats uzturēšu" },
+  { id: "basic", label: "Pamata uzturēšana", monthly: 19, description: "Hostings, drošība, backups" },
+  { id: "regular", label: "Regulāri atjauninājumi", monthly: 49, description: "+ saturs, izmaiņas, atskaites" },
+] as const;
+export type MaintenanceId = (typeof MAINTENANCE_LEVELS)[number]["id"];
+
 // ============================================
 // CALCULATOR INPUT + OUTPUT
 // ============================================
@@ -149,8 +166,10 @@ export interface CalculatorInput {
   sectionTier: SectionTierId;
   features: string[];
   materials: MaterialId[];
+  assets: AssetId[];
   designLevel: DesignLevelId;
   urgency: UrgencyId;
+  maintenance: MaintenanceId;
 }
 
 export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
@@ -158,6 +177,7 @@ export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
 export interface CalculatorResult {
   base: PriceRange;
   addons: number;
+  discounts: number;
   range: PriceRange;
   average: number;
   tier: BudgetTier;
@@ -165,6 +185,7 @@ export interface CalculatorResult {
   tierDescription: string;
   cost: number;
   profit: number;
+  monthlyMaintenance: number;
   breakdown: { label: string; amount: number | string }[];
   suggestionsCheaper: string[];
   suggestionsBetter: string[];
@@ -250,9 +271,19 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     breakdown.push({ label: urg.label, amount: urg.price });
   }
 
+  // Atlaide par materiāliem, kas klientam jau ir
+  let discounts = 0;
+  for (const id of input.assets) {
+    const a = ASSETS.find((x) => x.id === id);
+    if (a) {
+      discounts += a.discount;
+      breakdown.push({ label: `Ir ${a.label.toLowerCase().replace("ir ", "")}`, amount: `−${a.discount}€` });
+    }
+  }
+
   const range: PriceRange = {
-    min: base.min + addons,
-    max: base.max + addons,
+    min: Math.max(50, base.min + addons - discounts),
+    max: Math.max(60, base.max + addons - discounts),
   };
   const average = Math.round((range.min + range.max) / 2);
   const tier = tierFromAverage(average);
@@ -261,6 +292,10 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
   // Iekšējie aprēķini
   const cost = Math.round(average * 0.3);
   const profit = average - cost;
+
+  // Uzturēšana (atsevišķa mēneša maksa)
+  const maint = MAINTENANCE_LEVELS.find((m) => m.id === input.maintenance);
+  const monthlyMaintenance = maint?.monthly ?? 0;
 
   // Ieteikumi — kā samazināt
   const suggestionsCheaper: string[] = [];
@@ -299,6 +334,7 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
   return {
     base,
     addons,
+    discounts,
     range,
     average,
     tier,
@@ -306,6 +342,7 @@ export function calculate(input: CalculatorInput): CalculatorResult | null {
     tierDescription: tierInfo.description,
     cost,
     profit,
+    monthlyMaintenance,
     breakdown,
     suggestionsCheaper: suggestionsCheaper.slice(0, 4),
     suggestionsBetter: suggestionsBetter.slice(0, 4),
@@ -317,6 +354,8 @@ export const INITIAL_INPUT: CalculatorInput = {
   sectionTier: "1-3",
   features: [],
   materials: [],
+  assets: [],
   designLevel: "simple",
   urgency: "normal",
+  maintenance: "none",
 };
