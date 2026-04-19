@@ -1,6 +1,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Plus } from "lucide-react";
 import { FeatureDef } from "@/lib/pricing";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { featureKey } from "@/i18n/keys";
 
 interface FeatureChipProps {
   feature: FeatureDef;
@@ -9,6 +11,7 @@ interface FeatureChipProps {
 }
 
 export const FeatureChip = ({ feature, selected, onToggle }: FeatureChipProps) => {
+  const { t } = useLanguage();
   return (
     <motion.button
       type="button"
@@ -52,7 +55,7 @@ export const FeatureChip = ({ feature, selected, onToggle }: FeatureChipProps) =
             )}
           </AnimatePresence>
         </div>
-        <span className="text-sm font-medium truncate">{feature.label}</span>
+        <span className="text-sm font-medium truncate">{t(featureKey(feature.id))}</span>
       </div>
       <span
         className={`shrink-0 text-xs font-mono font-semibold tabular-nums ${
