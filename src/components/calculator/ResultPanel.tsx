@@ -50,35 +50,38 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
         <div className="relative">
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Aplēstā cena
+              Jūsu mājaslapas cena
             </span>
             <div className={`px-3 py-1 rounded-full ring-1 ${style.bg} ${style.ring} ${style.color} text-xs font-semibold uppercase tracking-wider`}>
               {style.label}
             </div>
           </div>
 
-          {/* Range */}
+          {/* Main client price */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${result.range.min}-${result.range.max}`}
+              key={result.average}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3 }}
             >
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-4xl sm:text-5xl font-display font-bold text-gradient tabular-nums">
-                  {result.range.min}€
-                </span>
-                <span className="text-2xl text-muted-foreground font-light">—</span>
-                <span className="text-4xl sm:text-5xl font-display font-bold text-gradient tabular-nums">
-                  {result.range.max}€
+                <span className="text-5xl sm:text-6xl font-display font-bold text-gradient tabular-nums leading-none">
+                  {result.average}€
                 </span>
               </div>
               <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-                Šāds projekts parasti maksā <strong className="text-foreground">no {result.range.min}€ līdz {result.range.max}€</strong>.
-                Vidēji <span className="text-primary font-semibold">~{result.average}€</span>.
+                Tipiska tirgus cena šādam projektam:{" "}
+                <span className="text-foreground font-semibold tabular-nums">
+                  {result.marketRange.min}€ – {result.marketRange.max}€
+                </span>
               </p>
+              {result.discounts > 0 && (
+                <p className="text-xs text-success mt-1.5 font-medium">
+                  Ietaupījums no jūsu materiāliem: ~{Math.round(result.discounts * 2)}€
+                </p>
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -107,6 +110,34 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
           </div>
         </div>
       </div>
+
+      {/* RECOMMENDED PACKAGE — perceived value upsell */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+        className="rounded-2xl p-5 relative overflow-hidden border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card"
+      >
+        <div className="absolute top-3 right-3">
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider shadow-glow">
+            <Sparkles className="w-3 h-3" /> Labākā izvēle
+          </span>
+        </div>
+        <div className="mb-1.5">
+          <h4 className="font-display font-semibold text-sm">Recommended pakete</h4>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3 max-w-[80%]">
+          Premium dizains, prioritārs atbalsts, paplašinātas funkcijas — labākais ROI ilgtermiņā.
+        </p>
+        <div className="flex items-baseline gap-2">
+          <span className="text-3xl font-display font-bold text-foreground tabular-nums">
+            {result.recommended}€
+          </span>
+          <span className="text-xs text-muted-foreground">
+            (+{result.recommended - result.average}€)
+          </span>
+        </div>
+      </motion.div>
 
       {/* SUGGESTIONS */}
       {(result.suggestionsCheaper.length > 0 || result.suggestionsBetter.length > 0) && (
