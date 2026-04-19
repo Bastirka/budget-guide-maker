@@ -1,17 +1,19 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, Building2, UtensilsCrossed, Palette, ShoppingBag, CalendarCheck, Sparkles,
-  ArrowRight, ArrowLeft, RotateCcw, Calculator,
+  ArrowRight, ArrowLeft, RotateCcw, Calculator, Wrench,
 } from "lucide-react";
 import {
-  WEBSITE_TYPES, SECTION_TIERS, FEATURES, MATERIALS, DESIGN_LEVELS, URGENCY_LEVELS,
-  calculate, INITIAL_INPUT, CalculatorInput, WebsiteType, MaterialId,
+  WEBSITE_TYPES, SECTION_TIERS, FEATURES, MATERIALS, ASSETS, DESIGN_LEVELS, URGENCY_LEVELS, MAINTENANCE_LEVELS,
+  calculate, INITIAL_INPUT, CalculatorInput, WebsiteType, MaterialId, AssetId,
 } from "@/lib/pricing";
+import { Hero } from "@/components/calculator/Hero";
 import { StepProgress } from "@/components/calculator/StepProgress";
 import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
+import { LeadForm } from "@/components/calculator/LeadForm";
 import { Button } from "@/components/ui/button";
 
 const ICON_MAP = {
@@ -23,8 +25,10 @@ const STEPS = [
   { id: 1, label: "Sadaļas" },
   { id: 2, label: "Funkcijas" },
   { id: 3, label: "Materiāli" },
-  { id: 4, label: "Dizains" },
-  { id: 5, label: "Termiņš" },
+  { id: 4, label: "Jau ir" },
+  { id: 5, label: "Dizains" },
+  { id: 6, label: "Termiņš" },
+  { id: 7, label: "Uzturēšana" },
 ];
 
 const FEATURE_CATEGORIES = [
@@ -37,6 +41,7 @@ const FEATURE_CATEGORIES = [
 const Index = () => {
   const [input, setInput] = useState<CalculatorInput>(INITIAL_INPUT);
   const [step, setStep] = useState(0);
+  const calcRef = useRef<HTMLElement>(null);
 
   const result = useMemo(() => calculate(input), [input]);
 
@@ -55,11 +60,22 @@ const Index = () => {
       materials: p.materials.includes(id) ? p.materials.filter((m) => m !== id) : [...p.materials, id],
     }));
 
+  const toggleAsset = (id: AssetId) =>
+    setInput((p) => ({
+      ...p,
+      assets: p.assets.includes(id) ? p.assets.filter((a) => a !== id) : [...p.assets, id],
+    }));
+
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const prev = () => setStep((s) => Math.max(s - 1, 0));
   const reset = () => { setInput(INITIAL_INPUT); setStep(0); };
 
+  const scrollToCalc = () => {
+    calcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   const canProceed = step === 0 ? !!input.websiteType : true;
+  const isLastStep = step === STEPS.length - 1;
 
   return (
     <div className="min-h-screen relative">
@@ -85,39 +101,17 @@ const Index = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative pt-12 pb-8">
-        <div className="container max-w-5xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-card/60 backdrop-blur mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                Reālas cenas · Latvijas tirgus
-              </span>
-            </div>
-            <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4">
-              Cik maksā <span className="text-gradient">jūsu mājaslapa</span>?
-            </h1>
-            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Atbildiet uz dažiem jautājumiem un saņemiet precīzu cenu diapazonu — bez liekiem solījumiem,
-              bez slēptām maksām. Aprēķins notiek reāllaikā.
-            </p>
-          </motion.div>
-        </div>
-      </section>
+      <Hero onStart={scrollToCalc} />
 
       {/* Calculator */}
-      <section className="relative pb-24">
+      <section ref={calcRef} className="relative pb-16 scroll-mt-20">
         <div className="container max-w-7xl">
           <div className="grid lg:grid-cols-[1fr_440px] gap-6 lg:gap-8 items-start">
             {/* LEFT — STEPS */}
             <div className="glow-card rounded-2xl p-5 sm:p-7">
               <StepProgress steps={STEPS} current={step} onJump={setStep} />
 
-              <div className="mt-8 min-h-[320px]">
+              <div className="mt-8 min-h-[340px]">
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={step}
@@ -207,12 +201,12 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* STEP 3: MATERIALS */}
+                    {/* STEP 3: MATERIALS — kas vajag, ka mēs taisām */}
                     {step === 3 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Vai jums ir materiāli?</h2>
+                        <h2 className="font-display text-xl font-semibold mb-1">Kas mums jāizveido jums?</h2>
                         <p className="text-sm text-muted-foreground mb-5">
-                          Logo, teksti, attēli — ja nav, mēs to izveidojam.
+                          Atzīmējiet, ja jums vajag, lai mēs sagatavojam.
                         </p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {MATERIALS.map((m) => (
@@ -231,8 +225,29 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* STEP 4: DESIGN */}
+                    {/* STEP 4: ASSETS — kas jums jau ir (atlaide) */}
                     {step === 4 && (
+                      <div>
+                        <h2 className="font-display text-xl font-semibold mb-1">Kas jums jau ir gatavs?</h2>
+                        <p className="text-sm text-muted-foreground mb-5">
+                          Saņemiet atlaidi par materiāliem, ko sniedzat jūs.
+                        </p>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          {ASSETS.map((a) => (
+                            <OptionCard
+                              key={a.id}
+                              selected={input.assets.includes(a.id)}
+                              onClick={() => toggleAsset(a.id)}
+                              title={a.label}
+                              price={`−${a.discount}€`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 5: DESIGN */}
+                    {step === 5 && (
                       <div>
                         <h2 className="font-display text-xl font-semibold mb-1">Kāds dizaina līmenis?</h2>
                         <p className="text-sm text-muted-foreground mb-5">No template līdz pilnībā unikālam.</p>
@@ -251,8 +266,8 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* STEP 5: URGENCY */}
-                    {step === 5 && (
+                    {/* STEP 6: URGENCY */}
+                    {step === 6 && (
                       <div>
                         <h2 className="font-display text-xl font-semibold mb-1">Cik ātri vajag gatavu?</h2>
                         <p className="text-sm text-muted-foreground mb-5">Steidzamība ietekmē galīgo cenu.</p>
@@ -264,6 +279,29 @@ const Index = () => {
                               onClick={() => update("urgency", u.id)}
                               title={u.label}
                               price={u.price}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* STEP 7: MAINTENANCE */}
+                    {step === 7 && (
+                      <div>
+                        <h2 className="font-display text-xl font-semibold mb-1">Vai vajag uzturēšanu?</h2>
+                        <p className="text-sm text-muted-foreground mb-5">
+                          Mēneša maksa pēc projekta nodošanas — neietilpst gala cenā.
+                        </p>
+                        <div className="grid gap-3">
+                          {MAINTENANCE_LEVELS.map((m) => (
+                            <OptionCard
+                              key={m.id}
+                              selected={input.maintenance === m.id}
+                              onClick={() => update("maintenance", m.id)}
+                              icon={Wrench}
+                              title={m.label}
+                              description={m.description}
+                              price={m.monthly === 0 ? "iekļauts" : `${m.monthly}€/mēn.`}
                             />
                           ))}
                         </div>
@@ -288,7 +326,7 @@ const Index = () => {
                 </span>
                 <Button
                   onClick={next}
-                  disabled={step === STEPS.length - 1 || !canProceed}
+                  disabled={isLastStep || !canProceed}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-glow"
                 >
                   Tālāk <ArrowRight className="w-4 h-4 ml-1.5" />
@@ -297,10 +335,22 @@ const Index = () => {
             </div>
 
             {/* RIGHT — RESULT */}
-            <div className="lg:sticky lg:top-24">
+            <div className="lg:sticky lg:top-24 space-y-4">
               <ResultPanel result={result} />
             </div>
           </div>
+
+          {/* LEAD FORM — under everything, full width on mobile */}
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mt-10 max-w-3xl mx-auto"
+            >
+              <LeadForm input={input} result={result} />
+            </motion.div>
+          )}
         </div>
       </section>
 
