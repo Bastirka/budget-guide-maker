@@ -9,6 +9,7 @@ interface OptionCardProps {
   description?: string;
   price?: string | number;
   compact?: boolean;
+  zeroLabel?: string;
 }
 
 export const OptionCard = ({
@@ -19,6 +20,7 @@ export const OptionCard = ({
   description,
   price,
   compact = false,
+  zeroLabel = "iekļauts",
 }: OptionCardProps) => {
   return (
     <motion.button
@@ -59,7 +61,7 @@ export const OptionCard = ({
                   selected ? "text-primary" : "text-muted-foreground"
                 }`}
               >
-                {typeof price === "number" ? (price === 0 ? "iekļauts" : `+${price}€`) : price}
+                {typeof price === "number" ? (price === 0 ? zeroLabel : `+${price}€`) : price}
               </span>
             )}
           </div>
