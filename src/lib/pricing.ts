@@ -182,6 +182,15 @@ export interface CalculatorInput {
 
 export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
 
+export type BreakdownItem =
+  | { kind: "base"; websiteType: WebsiteType; label: string; amount: string }
+  | { kind: "section"; id: SectionTierId; label: string; amount: number }
+  | { kind: "feature"; id: string; label: string; amount: number }
+  | { kind: "material"; id: MaterialId; label: string; amount: number }
+  | { kind: "design"; id: DesignLevelId; label: string; amount: number }
+  | { kind: "urgency"; id: UrgencyId; label: string; amount: number }
+  | { kind: "asset"; id: AssetId; label: string; amount: string };
+
 export interface CalculatorResult {
   base: PriceRange;
   addons: number;
@@ -204,7 +213,7 @@ export interface CalculatorResult {
   /** Iekšējā cena pirms multiplier — tikai admin */
   internalPrice: number;
   monthlyMaintenance: number;
-  breakdown: { label: string; amount: number | string }[];
+  breakdown: BreakdownItem[];
   suggestionsCheaper: string[];
   suggestionsBetter: string[];
 }
