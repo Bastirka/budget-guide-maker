@@ -1,7 +1,15 @@
 // ============================================
-// LOW-BUDGET CENU SISTĒMA — startup klientiem
-// Visas cenas EUR. Bāzes cenas ir RANGE (min/max).
+// CENU SISTĒMA — ar market-based multiplier
+// Iekšējās cenas reizina ar PRICE_MULTIPLIER, lai iegūtu klienta cenu.
+// Klients NEKAD neredz iekšējo cenu vai multiplier.
 // ============================================
+
+// Vienīgais skaitlis, ko maina, lai pielāgotu visu klienta cenu līmeni.
+export const PRICE_MULTIPLIER = 2;
+// Recommended package = klienta cena × šis koeficients.
+export const RECOMMENDED_MULTIPLIER = 1.35;
+// Iekšējās izmaksas (no iekšējās cenas).
+export const COST_RATIO = 0.3;
 
 export type WebsiteType =
   | "landing"
