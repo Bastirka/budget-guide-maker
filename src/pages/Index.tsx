@@ -15,33 +15,45 @@ import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
 import { LeadForm } from "@/components/calculator/LeadForm";
 import { Button } from "@/components/ui/button";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useLanguage } from "@/i18n/LanguageContext";
+import {
+  websiteTypeKey,
+  sectionTierKey,
+  materialKey,
+  assetKey,
+  designLevelKey,
+  urgencyKey,
+  maintenanceKey,
+} from "@/i18n/keys";
 
 const ICON_MAP = {
   Rocket, Building2, UtensilsCrossed, Palette, ShoppingBag, CalendarCheck, Sparkles,
 };
 
-const STEPS = [
-  { id: 0, label: "Tips" },
-  { id: 1, label: "Sadaļas" },
-  { id: 2, label: "Funkcijas" },
-  { id: 3, label: "Materiāli" },
-  { id: 4, label: "Jau ir" },
-  { id: 5, label: "Dizains" },
-  { id: 6, label: "Termiņš" },
-  { id: 7, label: "Uzturēšana" },
-];
-
 const FEATURE_CATEGORIES = [
-  { id: "essential", label: "Pamata" },
-  { id: "marketing", label: "Marketings & SEO" },
-  { id: "ecommerce", label: "E-komercija" },
-  { id: "advanced", label: "Advanced" },
+  { id: "essential", labelKey: "features.essential" },
+  { id: "marketing", labelKey: "features.marketing" },
+  { id: "ecommerce", labelKey: "features.ecommerce" },
+  { id: "advanced", labelKey: "features.advanced" },
 ] as const;
 
 const Index = () => {
+  const { t } = useLanguage();
   const [input, setInput] = useState<CalculatorInput>(INITIAL_INPUT);
   const [step, setStep] = useState(0);
   const calcRef = useRef<HTMLElement>(null);
+
+  const STEPS = [
+    { id: 0, label: t("steps.type") },
+    { id: 1, label: t("steps.sections") },
+    { id: 2, label: t("steps.features") },
+    { id: 3, label: t("steps.materials") },
+    { id: 4, label: t("steps.assets") },
+    { id: 5, label: t("steps.design") },
+    { id: 6, label: t("steps.urgency") },
+    { id: 7, label: t("steps.maintenance") },
+  ];
 
   const result = useMemo(() => calculate(input), [input]);
 
@@ -76,6 +88,7 @@ const Index = () => {
 
   const canProceed = step === 0 ? !!input.websiteType : true;
   const isLastStep = step === STEPS.length - 1;
+  const zeroLabel = t("common.included");
 
   return (
     <div className="min-h-screen relative">
@@ -90,13 +103,16 @@ const Index = () => {
               <Calculator className="w-4 h-4 text-primary-foreground" strokeWidth={2.5} />
             </div>
             <div className="leading-tight">
-              <div className="font-display font-bold text-sm">PriceLab</div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">Web Calculator</div>
+              <div className="font-display font-bold text-sm">{t("header.brand")}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wider">{t("header.tagline")}</div>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={reset} className="text-xs">
-            <RotateCcw className="w-3 h-3 mr-1.5" /> Sākt no jauna
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageSwitcher />
+            <Button variant="ghost" size="sm" onClick={reset} className="text-xs">
+              <RotateCcw className="w-3 h-3 mr-1.5" /> {t("header.reset")}
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -123,21 +139,23 @@ const Index = () => {
                     {/* STEP 0: WEBSITE TYPE */}
                     {step === 0 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Kāda veida mājaslapa?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">Izvēlieties projektam vistuvāko tipu.</p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step0.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step0.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {(Object.keys(WEBSITE_TYPES) as WebsiteType[]).map((key) => {
-                            const t = WEBSITE_TYPES[key];
-                            const Icon = ICON_MAP[t.icon as keyof typeof ICON_MAP];
+                            const tDef = WEBSITE_TYPES[key];
+                            const k = websiteTypeKey(key);
+                            const Icon = ICON_MAP[tDef.icon as keyof typeof ICON_MAP];
                             return (
                               <OptionCard
                                 key={key}
                                 selected={input.websiteType === key}
                                 onClick={() => update("websiteType", key)}
                                 icon={Icon}
-                                title={t.label}
-                                description={t.description}
-                                price={`${t.range.min}–${t.range.max}€`}
+                                title={t(k.label)}
+                                description={t(k.description)}
+                                price={`${tDef.range.min}–${tDef.range.max}€`}
+                                zeroLabel={zeroLabel}
                               />
                             );
                           })}
@@ -148,18 +166,17 @@ const Index = () => {
                     {/* STEP 1: SECTIONS */}
                     {step === 1 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Cik sadaļu būs mājaslapā?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">
-                          Sadaļa = atsevišķa lapa vai liels bloks (Sākums, Par mums, Pakalpojumi utt.)
-                        </p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step1.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step1.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {SECTION_TIERS.map((s) => (
                             <OptionCard
                               key={s.id}
                               selected={input.sectionTier === s.id}
                               onClick={() => update("sectionTier", s.id)}
-                              title={s.label}
+                              title={t(sectionTierKey(s.id))}
                               price={s.price}
+                              zeroLabel={zeroLabel}
                             />
                           ))}
                         </div>
@@ -169,10 +186,8 @@ const Index = () => {
                     {/* STEP 2: FEATURES */}
                     {step === 2 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Kādas funkcijas vajag?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">
-                          Atzīmējiet visu, kas jums nepieciešams. Cenas redzamas blakus.
-                        </p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step2.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step2.subtitle")}</p>
                         <div className="space-y-5">
                           {FEATURE_CATEGORIES.map((cat) => {
                             const items = FEATURES.filter((f) => f.category === cat.id);
@@ -180,7 +195,7 @@ const Index = () => {
                               <div key={cat.id}>
                                 <div className="flex items-center gap-2 mb-2.5">
                                   <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-                                    {cat.label}
+                                    {t(cat.labelKey)}
                                   </span>
                                   <div className="flex-1 h-px bg-border" />
                                 </div>
@@ -201,45 +216,43 @@ const Index = () => {
                       </div>
                     )}
 
-                    {/* STEP 3: MATERIALS — kas vajag, ka mēs taisām */}
+                    {/* STEP 3: MATERIALS */}
                     {step === 3 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Kas mums jāizveido jums?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">
-                          Atzīmējiet, ja jums vajag, lai mēs sagatavojam.
-                        </p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step3.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step3.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {MATERIALS.map((m) => (
                             <OptionCard
                               key={m.id}
                               selected={input.materials.includes(m.id)}
                               onClick={() => toggleMaterial(m.id)}
-                              title={m.label}
+                              title={t(materialKey(m.id))}
                               price={m.price}
+                              zeroLabel={zeroLabel}
                             />
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-4 italic">
-                          💡 Ja izvēlēsieties "Viss no nulles", atsevišķās pozīcijas tiks ignorētas.
+                          {t("step3.note")}
                         </p>
                       </div>
                     )}
 
-                    {/* STEP 4: ASSETS — kas jums jau ir (atlaide) */}
+                    {/* STEP 4: ASSETS */}
                     {step === 4 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Kas jums jau ir gatavs?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">
-                          Saņemiet atlaidi par materiāliem, ko sniedzat jūs.
-                        </p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step4.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step4.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {ASSETS.map((a) => (
                             <OptionCard
                               key={a.id}
                               selected={input.assets.includes(a.id)}
                               onClick={() => toggleAsset(a.id)}
-                              title={a.label}
+                              title={t(assetKey(a.id))}
                               price={`−${a.discount}€`}
+                              zeroLabel={zeroLabel}
                             />
                           ))}
                         </div>
@@ -249,19 +262,23 @@ const Index = () => {
                     {/* STEP 5: DESIGN */}
                     {step === 5 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Kāds dizaina līmenis?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">No template līdz pilnībā unikālam.</p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step5.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step5.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
-                          {DESIGN_LEVELS.map((d) => (
-                            <OptionCard
-                              key={d.id}
-                              selected={input.designLevel === d.id}
-                              onClick={() => update("designLevel", d.id)}
-                              title={d.label}
-                              description={d.description}
-                              price={d.price}
-                            />
-                          ))}
+                          {DESIGN_LEVELS.map((d) => {
+                            const k = designLevelKey(d.id);
+                            return (
+                              <OptionCard
+                                key={d.id}
+                                selected={input.designLevel === d.id}
+                                onClick={() => update("designLevel", d.id)}
+                                title={t(k.label)}
+                                description={t(k.description)}
+                                price={d.price}
+                                zeroLabel={zeroLabel}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -269,16 +286,17 @@ const Index = () => {
                     {/* STEP 6: URGENCY */}
                     {step === 6 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Cik ātri vajag gatavu?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">Steidzamība ietekmē galīgo cenu.</p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step6.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step6.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
                           {URGENCY_LEVELS.map((u) => (
                             <OptionCard
                               key={u.id}
                               selected={input.urgency === u.id}
                               onClick={() => update("urgency", u.id)}
-                              title={u.label}
+                              title={t(urgencyKey(u.id))}
                               price={u.price}
+                              zeroLabel={zeroLabel}
                             />
                           ))}
                         </div>
@@ -288,22 +306,24 @@ const Index = () => {
                     {/* STEP 7: MAINTENANCE */}
                     {step === 7 && (
                       <div>
-                        <h2 className="font-display text-xl font-semibold mb-1">Vai vajag uzturēšanu?</h2>
-                        <p className="text-sm text-muted-foreground mb-5">
-                          Mēneša maksa pēc projekta nodošanas — neietilpst gala cenā.
-                        </p>
+                        <h2 className="font-display text-xl font-semibold mb-1">{t("step7.title")}</h2>
+                        <p className="text-sm text-muted-foreground mb-5">{t("step7.subtitle")}</p>
                         <div className="grid gap-3">
-                          {MAINTENANCE_LEVELS.map((m) => (
-                            <OptionCard
-                              key={m.id}
-                              selected={input.maintenance === m.id}
-                              onClick={() => update("maintenance", m.id)}
-                              icon={Wrench}
-                              title={m.label}
-                              description={m.description}
-                              price={m.monthly === 0 ? "iekļauts" : `${m.monthly}€/mēn.`}
-                            />
-                          ))}
+                          {MAINTENANCE_LEVELS.map((m) => {
+                            const k = maintenanceKey(m.id);
+                            return (
+                              <OptionCard
+                                key={m.id}
+                                selected={input.maintenance === m.id}
+                                onClick={() => update("maintenance", m.id)}
+                                icon={Wrench}
+                                title={t(k.label)}
+                                description={t(k.description)}
+                                price={m.monthly === 0 ? zeroLabel : `${m.monthly}€${t("common.perMonth")}`}
+                                zeroLabel={zeroLabel}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -319,17 +339,17 @@ const Index = () => {
                   disabled={step === 0}
                   className="text-sm"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-1.5" /> Atpakaļ
+                  <ArrowLeft className="w-4 h-4 mr-1.5" /> {t("nav.back")}
                 </Button>
                 <span className="text-xs text-muted-foreground tabular-nums">
-                  Solis {step + 1} / {STEPS.length}
+                  {t("nav.step")} {step + 1} / {STEPS.length}
                 </span>
                 <Button
                   onClick={next}
                   disabled={isLastStep || !canProceed}
                   className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-glow"
                 >
-                  Tālāk <ArrowRight className="w-4 h-4 ml-1.5" />
+                  {t("nav.next")} <ArrowRight className="w-4 h-4 ml-1.5" />
                 </Button>
               </div>
             </div>
@@ -340,7 +360,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* LEAD FORM — under everything, full width on mobile */}
+          {/* LEAD FORM */}
           {result && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -357,7 +377,7 @@ const Index = () => {
       {/* Footer */}
       <footer className="relative border-t border-border/60 py-6">
         <div className="container text-center text-xs text-muted-foreground">
-          Cenas balstītas uz vidējām likmēm Latvijas tirgū maziem web studio · Galīgā cena tiek apstiprināta pēc projekta brīfa
+          {t("footer.text")}
         </div>
       </footer>
     </div>
