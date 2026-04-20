@@ -369,7 +369,6 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               className="mt-10 max-w-3xl mx-auto space-y-6"
             >
-              <LeadForm input={input} result={result} />
               <QuoteRequestForm input={input} result={result} />
             </motion.div>
           )}
