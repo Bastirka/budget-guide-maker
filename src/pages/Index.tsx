@@ -13,7 +13,7 @@ import { StepProgress } from "@/components/calculator/StepProgress";
 import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
-import { LeadForm } from "@/components/calculator/LeadForm";
+
 import { QuoteRequestForm } from "@/components/calculator/QuoteRequestForm";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
@@ -369,7 +369,6 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               className="mt-10 max-w-3xl mx-auto space-y-6"
             >
-              <LeadForm input={input} result={result} />
               <QuoteRequestForm input={input} result={result} />
             </motion.div>
           )}
