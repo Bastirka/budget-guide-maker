@@ -13,7 +13,7 @@ import { StepProgress } from "@/components/calculator/StepProgress";
 import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
-import { LeadForm } from "@/components/calculator/LeadForm";
+
 import { QuoteRequestForm } from "@/components/calculator/QuoteRequestForm";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
