@@ -151,6 +151,28 @@ export const translations = {
     "summary.comments": "💬 KOMENTĀRI:",
     "summary.subject": "Mājaslapas pieprasījums — ",
 
+    // Quote Request (backend submission)
+    "quote.title": "Pieprasīt piedāvājumu",
+    "quote.subtitle": "Aizpildiet formu un mēs ar jums sazināsimies tuvākajā laikā.",
+    "quote.field.name": "Vārds",
+    "quote.field.business": "Uzņēmuma nosaukums",
+    "quote.field.email": "E-pasts",
+    "quote.field.phone": "Telefons / Telegram",
+    "quote.field.notes": "Piezīmes",
+    "quote.placeholder.name": "Jānis Bērziņš",
+    "quote.placeholder.business": "SIA Piemērs",
+    "quote.placeholder.email": "janis@example.lv",
+    "quote.placeholder.phone": "+371 20000000 / @username",
+    "quote.placeholder.notes": "Pastāstiet vairāk par projektu...",
+    "quote.submit": "Nosūtīt pieprasījumu",
+    "quote.sending": "Sūta…",
+    "quote.success": "Pieprasījums veiksmīgi nosūtīts! Mēs sazināsimies ar jums tuvākajā laikā.",
+    "quote.error": "Neizdevās nosūtīt pieprasījumu. Lūdzu, mēģiniet vēlreiz.",
+    "quote.error.name": "Vārds ir obligāts",
+    "quote.error.phone": "Telefons vai Telegram ir obligāts",
+    "quote.error.email": "Nepareiza e-pasta adrese",
+    "quote.priceNote": "Galīgā cena var atšķirties atkarībā no individuālajām prasībām.",
+
     // Footer
     "footer.text":
       "Cenas balstītas uz vidējām likmēm Latvijas tirgū maziem web studio · Galīgā cena tiek apstiprināta pēc projekta brīfa",
@@ -388,6 +410,28 @@ export const translations = {
     "summary.tier": "Tier",
     "summary.comments": "💬 COMMENTS:",
     "summary.subject": "Website request — ",
+
+    // Quote Request (backend submission)
+    "quote.title": "Request a Quote",
+    "quote.subtitle": "Fill out the form and we'll get back to you shortly.",
+    "quote.field.name": "Name",
+    "quote.field.business": "Business Name",
+    "quote.field.email": "Email",
+    "quote.field.phone": "Phone / Telegram",
+    "quote.field.notes": "Notes",
+    "quote.placeholder.name": "John Smith",
+    "quote.placeholder.business": "Acme Inc.",
+    "quote.placeholder.email": "john@example.com",
+    "quote.placeholder.phone": "+371 20000000 / @username",
+    "quote.placeholder.notes": "Tell us more about your project...",
+    "quote.submit": "Send Request",
+    "quote.sending": "Sending…",
+    "quote.success": "Request sent successfully! We'll be in touch shortly.",
+    "quote.error": "Failed to send request. Please try again.",
+    "quote.error.name": "Name is required",
+    "quote.error.phone": "Phone or Telegram is required",
+    "quote.error.email": "Invalid email address",
+    "quote.priceNote": "Final price may vary depending on custom requirements.",
 
     // Footer
     "footer.text":
