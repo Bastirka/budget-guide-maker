@@ -14,7 +14,6 @@ import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
 import { LeadForm } from "@/components/calculator/LeadForm";
-import { QuoteRequestForm } from "@/components/calculator/QuoteRequestForm";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -367,10 +366,9 @@ const Index = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mt-10 max-w-3xl mx-auto space-y-6"
+              className="mt-10 max-w-3xl mx-auto"
             >
               <LeadForm input={input} result={result} />
-              <QuoteRequestForm input={input} result={result} />
             </motion.div>
           )}
         </div>
