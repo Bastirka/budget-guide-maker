@@ -160,7 +160,7 @@ const Index = () => {
                         <h2 className="font-display text-xl font-semibold mb-1">{t("step0.title")}</h2>
                         <p className="text-sm text-muted-foreground mb-5">{t("step0.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
-                          {(Object.keys(WEBSITE_TYPES) as WebsiteType[]).map((key) => {
+                          {WEBSITE_TYPE_KEYS.map((key) => {
                             const tDef = WEBSITE_TYPES[key];
                             const k = websiteTypeKey(key);
                             const Icon = ICON_MAP[tDef.icon as keyof typeof ICON_MAP];
