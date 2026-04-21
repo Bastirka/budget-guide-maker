@@ -1,4 +1,5 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { memo } from "react";
+import { motion } from "framer-motion";
 import { Check, Plus } from "lucide-react";
 import { FeatureDef } from "@/lib/pricing";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -10,14 +11,15 @@ interface FeatureChipProps {
   onToggle: () => void;
 }
 
-export const FeatureChip = ({ feature, selected, onToggle }: FeatureChipProps) => {
+const FeatureChipImpl = ({ feature, selected, onToggle }: FeatureChipProps) => {
   const { t } = useLanguage();
   return (
     <motion.button
       type="button"
       onClick={onToggle}
       whileTap={{ scale: 0.97 }}
-      className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-left transition-all duration-200 ${
+      aria-pressed={selected}
+      className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         selected
           ? "border-primary bg-primary/10 text-foreground"
           : "border-border bg-card hover:border-border/80 hover:bg-card/60 text-foreground/90"
@@ -30,30 +32,13 @@ export const FeatureChip = ({ feature, selected, onToggle }: FeatureChipProps) =
               ? "bg-primary border-primary text-primary-foreground"
               : "border-border"
           }`}
+          aria-hidden="true"
         >
-          <AnimatePresence mode="wait">
-            {selected ? (
-              <motion.div
-                key="check"
-                initial={{ scale: 0, rotate: -90 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <Check className="w-3 h-3" strokeWidth={3} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="plus"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                <Plus className="w-3 h-3 text-muted-foreground" />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {selected ? (
+            <Check className="w-3 h-3" strokeWidth={3} />
+          ) : (
+            <Plus className="w-3 h-3 text-muted-foreground" />
+          )}
         </div>
         <span className="text-sm font-medium truncate">{t(featureKey(feature.id))}</span>
       </div>
@@ -67,3 +52,5 @@ export const FeatureChip = ({ feature, selected, onToggle }: FeatureChipProps) =
     </motion.button>
   );
 };
+
+export const FeatureChip = memo(FeatureChipImpl);

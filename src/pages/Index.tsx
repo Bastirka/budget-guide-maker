@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, Building2, UtensilsCrossed, Palette, ShoppingBag, CalendarCheck, Sparkles,
@@ -13,8 +13,11 @@ import { StepProgress } from "@/components/calculator/StepProgress";
 import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
+import { useSEO } from "@/hooks/useSEO";
 
-import { QuoteRequestForm } from "@/components/calculator/QuoteRequestForm";
+const QuoteRequestForm = lazy(() =>
+  import("@/components/calculator/QuoteRequestForm").then((m) => ({ default: m.QuoteRequestForm })),
+);
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -39,53 +42,67 @@ const FEATURE_CATEGORIES = [
   { id: "advanced", labelKey: "features.advanced" },
 ] as const;
 
+// Pre-group features by category once (module scope)
+const FEATURES_BY_CATEGORY = FEATURE_CATEGORIES.map((cat) => ({
+  ...cat,
+  items: FEATURES.filter((f) => f.category === cat.id),
+}));
+
+const WEBSITE_TYPE_KEYS = Object.keys(WEBSITE_TYPES) as WebsiteType[];
+
+function toggleIn<T>(arr: T[], item: T): T[] {
+  return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
+}
+
 const Index = () => {
+  useSEO();
   const { t } = useLanguage();
   const [input, setInput] = useState<CalculatorInput>(INITIAL_INPUT);
   const [step, setStep] = useState(0);
   const calcRef = useRef<HTMLElement>(null);
 
-  const STEPS = [
-    { id: 0, label: t("steps.type") },
-    { id: 1, label: t("steps.sections") },
-    { id: 2, label: t("steps.features") },
-    { id: 3, label: t("steps.materials") },
-    { id: 4, label: t("steps.assets") },
-    { id: 5, label: t("steps.design") },
-    { id: 6, label: t("steps.urgency") },
-    { id: 7, label: t("steps.maintenance") },
-  ];
+  const STEPS = useMemo(
+    () => [
+      { id: 0, label: t("steps.type") },
+      { id: 1, label: t("steps.sections") },
+      { id: 2, label: t("steps.features") },
+      { id: 3, label: t("steps.materials") },
+      { id: 4, label: t("steps.assets") },
+      { id: 5, label: t("steps.design") },
+      { id: 6, label: t("steps.urgency") },
+      { id: 7, label: t("steps.maintenance") },
+    ],
+    [t],
+  );
 
   const result = useMemo(() => calculate(input), [input]);
 
-  const update = <K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) =>
-    setInput((p) => ({ ...p, [key]: value }));
+  const update = useCallback(
+    <K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) =>
+      setInput((p) => ({ ...p, [key]: value })),
+    [],
+  );
 
-  const toggleFeature = (id: string) =>
-    setInput((p) => ({
-      ...p,
-      features: p.features.includes(id) ? p.features.filter((f) => f !== id) : [...p.features, id],
-    }));
+  const toggleFeature = useCallback(
+    (id: string) => setInput((p) => ({ ...p, features: toggleIn(p.features, id) })),
+    [],
+  );
+  const toggleMaterial = useCallback(
+    (id: MaterialId) => setInput((p) => ({ ...p, materials: toggleIn(p.materials, id) })),
+    [],
+  );
+  const toggleAsset = useCallback(
+    (id: AssetId) => setInput((p) => ({ ...p, assets: toggleIn(p.assets, id) })),
+    [],
+  );
 
-  const toggleMaterial = (id: MaterialId) =>
-    setInput((p) => ({
-      ...p,
-      materials: p.materials.includes(id) ? p.materials.filter((m) => m !== id) : [...p.materials, id],
-    }));
+  const next = useCallback(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), [STEPS.length]);
+  const prev = useCallback(() => setStep((s) => Math.max(s - 1, 0)), []);
+  const reset = useCallback(() => { setInput(INITIAL_INPUT); setStep(0); }, []);
 
-  const toggleAsset = (id: AssetId) =>
-    setInput((p) => ({
-      ...p,
-      assets: p.assets.includes(id) ? p.assets.filter((a) => a !== id) : [...p.assets, id],
-    }));
-
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const prev = () => setStep((s) => Math.max(s - 1, 0));
-  const reset = () => { setInput(INITIAL_INPUT); setStep(0); };
-
-  const scrollToCalc = () => {
+  const scrollToCalc = useCallback(() => {
     calcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  }, []);
 
   const canProceed = step === 0 ? !!input.websiteType : true;
   const isLastStep = step === STEPS.length - 1;
@@ -117,11 +134,12 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero */}
-      <Hero onStart={scrollToCalc} />
+      <main>
+        {/* Hero */}
+        <Hero onStart={scrollToCalc} />
 
-      {/* Calculator */}
-      <section ref={calcRef} className="relative pb-16 scroll-mt-20">
+        {/* Calculator */}
+        <section ref={calcRef} className="relative pb-16 scroll-mt-20" aria-label="Website price calculator">
         <div className="container max-w-7xl">
           <div className="grid lg:grid-cols-[1fr_440px] gap-6 lg:gap-8 items-start">
             {/* LEFT — STEPS */}
@@ -143,7 +161,7 @@ const Index = () => {
                         <h2 className="font-display text-xl font-semibold mb-1">{t("step0.title")}</h2>
                         <p className="text-sm text-muted-foreground mb-5">{t("step0.subtitle")}</p>
                         <div className="grid sm:grid-cols-2 gap-3">
-                          {(Object.keys(WEBSITE_TYPES) as WebsiteType[]).map((key) => {
+                          {WEBSITE_TYPE_KEYS.map((key) => {
                             const tDef = WEBSITE_TYPES[key];
                             const k = websiteTypeKey(key);
                             const Icon = ICON_MAP[tDef.icon as keyof typeof ICON_MAP];
@@ -190,29 +208,26 @@ const Index = () => {
                         <h2 className="font-display text-xl font-semibold mb-1">{t("step2.title")}</h2>
                         <p className="text-sm text-muted-foreground mb-5">{t("step2.subtitle")}</p>
                         <div className="space-y-5">
-                          {FEATURE_CATEGORIES.map((cat) => {
-                            const items = FEATURES.filter((f) => f.category === cat.id);
-                            return (
-                              <div key={cat.id}>
-                                <div className="flex items-center gap-2 mb-2.5">
-                                  <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-                                    {t(cat.labelKey)}
-                                  </span>
-                                  <div className="flex-1 h-px bg-border" />
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-2">
-                                  {items.map((f) => (
-                                    <FeatureChip
-                                      key={f.id}
-                                      feature={f}
-                                      selected={input.features.includes(f.id)}
-                                      onToggle={() => toggleFeature(f.id)}
-                                    />
-                                  ))}
-                                </div>
+                          {FEATURES_BY_CATEGORY.map((cat) => (
+                            <div key={cat.id}>
+                              <div className="flex items-center gap-2 mb-2.5">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                  {t(cat.labelKey)}
+                                </span>
+                                <div className="flex-1 h-px bg-border" />
                               </div>
-                            );
-                          })}
+                              <div className="grid sm:grid-cols-2 gap-2">
+                                {cat.items.map((f) => (
+                                  <FeatureChip
+                                    key={f.id}
+                                    feature={f}
+                                    selected={input.features.includes(f.id)}
+                                    onToggle={() => toggleFeature(f.id)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
@@ -356,12 +371,12 @@ const Index = () => {
             </div>
 
             {/* RIGHT — RESULT */}
-            <div className="lg:sticky lg:top-24 space-y-4">
+            <aside className="lg:sticky lg:top-24 space-y-4" aria-label="Price estimate">
               <ResultPanel result={result} />
-            </div>
+            </aside>
           </div>
 
-          {/* LEAD FORM */}
+          {/* QUOTE REQUEST */}
           {result && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -369,11 +384,14 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               className="mt-10 max-w-3xl mx-auto space-y-6"
             >
-              <QuoteRequestForm input={input} result={result} />
+              <Suspense fallback={<div className="glow-card rounded-2xl p-7 h-64 animate-pulse" />}>
+                <QuoteRequestForm input={input} result={result} />
+              </Suspense>
             </motion.div>
           )}
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="relative border-t border-border/60 py-6">

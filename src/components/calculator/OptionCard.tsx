@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 
@@ -12,7 +13,7 @@ interface OptionCardProps {
   zeroLabel?: string;
 }
 
-export const OptionCard = ({
+const OptionCardImpl = ({
   selected,
   onClick,
   icon: Icon,
@@ -28,11 +29,12 @@ export const OptionCard = ({
       onClick={onClick}
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.98 }}
-      className={`group relative text-left w-full rounded-xl border transition-all duration-300 ${
+      aria-pressed={selected}
+      className={`group relative text-left w-full rounded-xl border transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
         compact ? "p-3" : "p-4"
       } ${
         selected
-          ? "border-primary bg-primary/5 shadow-glow"
+          ? "border-primary bg-primary/5 shadow-glow ring-1 ring-primary/40"
           : "border-border bg-card hover:border-primary/40 hover:bg-card/80"
       }`}
     >
@@ -46,6 +48,7 @@ export const OptionCard = ({
                 ? "bg-primary text-primary-foreground"
                 : "bg-secondary text-muted-foreground group-hover:text-foreground"
             }`}
+            aria-hidden="true"
           >
             <Icon className={compact ? "w-4 h-4" : "w-5 h-5"} />
           </div>
@@ -70,13 +73,8 @@ export const OptionCard = ({
           )}
         </div>
       </div>
-      {selected && (
-        <motion.div
-          layoutId="selected-indicator"
-          className="absolute inset-0 rounded-xl ring-2 ring-primary pointer-events-none"
-          transition={{ type: "spring", duration: 0.4 }}
-        />
-      )}
     </motion.button>
   );
 };
+
+export const OptionCard = memo(OptionCardImpl);
