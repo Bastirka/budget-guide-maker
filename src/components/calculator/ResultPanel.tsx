@@ -93,7 +93,7 @@ export const ResultPanel = ({ result }: ResultPanelProps) => {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.3 }}
             >
-              <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="flex items-baseline gap-2 flex-wrap" aria-live="polite" aria-atomic="true">
                 <span className="text-5xl sm:text-6xl font-display font-bold text-gradient tabular-nums leading-none">
                   {result.average}€
                 </span>
