@@ -42,53 +42,67 @@ const FEATURE_CATEGORIES = [
   { id: "advanced", labelKey: "features.advanced" },
 ] as const;
 
+// Pre-group features by category once (module scope)
+const FEATURES_BY_CATEGORY = FEATURE_CATEGORIES.map((cat) => ({
+  ...cat,
+  items: FEATURES.filter((f) => f.category === cat.id),
+}));
+
+const WEBSITE_TYPE_KEYS = Object.keys(WEBSITE_TYPES) as WebsiteType[];
+
+function toggleIn<T>(arr: T[], item: T): T[] {
+  return arr.includes(item) ? arr.filter((x) => x !== item) : [...arr, item];
+}
+
 const Index = () => {
+  useSEO();
   const { t } = useLanguage();
   const [input, setInput] = useState<CalculatorInput>(INITIAL_INPUT);
   const [step, setStep] = useState(0);
   const calcRef = useRef<HTMLElement>(null);
 
-  const STEPS = [
-    { id: 0, label: t("steps.type") },
-    { id: 1, label: t("steps.sections") },
-    { id: 2, label: t("steps.features") },
-    { id: 3, label: t("steps.materials") },
-    { id: 4, label: t("steps.assets") },
-    { id: 5, label: t("steps.design") },
-    { id: 6, label: t("steps.urgency") },
-    { id: 7, label: t("steps.maintenance") },
-  ];
+  const STEPS = useMemo(
+    () => [
+      { id: 0, label: t("steps.type") },
+      { id: 1, label: t("steps.sections") },
+      { id: 2, label: t("steps.features") },
+      { id: 3, label: t("steps.materials") },
+      { id: 4, label: t("steps.assets") },
+      { id: 5, label: t("steps.design") },
+      { id: 6, label: t("steps.urgency") },
+      { id: 7, label: t("steps.maintenance") },
+    ],
+    [t],
+  );
 
   const result = useMemo(() => calculate(input), [input]);
 
-  const update = <K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) =>
-    setInput((p) => ({ ...p, [key]: value }));
+  const update = useCallback(
+    <K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) =>
+      setInput((p) => ({ ...p, [key]: value })),
+    [],
+  );
 
-  const toggleFeature = (id: string) =>
-    setInput((p) => ({
-      ...p,
-      features: p.features.includes(id) ? p.features.filter((f) => f !== id) : [...p.features, id],
-    }));
+  const toggleFeature = useCallback(
+    (id: string) => setInput((p) => ({ ...p, features: toggleIn(p.features, id) })),
+    [],
+  );
+  const toggleMaterial = useCallback(
+    (id: MaterialId) => setInput((p) => ({ ...p, materials: toggleIn(p.materials, id) })),
+    [],
+  );
+  const toggleAsset = useCallback(
+    (id: AssetId) => setInput((p) => ({ ...p, assets: toggleIn(p.assets, id) })),
+    [],
+  );
 
-  const toggleMaterial = (id: MaterialId) =>
-    setInput((p) => ({
-      ...p,
-      materials: p.materials.includes(id) ? p.materials.filter((m) => m !== id) : [...p.materials, id],
-    }));
+  const next = useCallback(() => setStep((s) => Math.min(s + 1, STEPS.length - 1)), [STEPS.length]);
+  const prev = useCallback(() => setStep((s) => Math.max(s - 1, 0)), []);
+  const reset = useCallback(() => { setInput(INITIAL_INPUT); setStep(0); }, []);
 
-  const toggleAsset = (id: AssetId) =>
-    setInput((p) => ({
-      ...p,
-      assets: p.assets.includes(id) ? p.assets.filter((a) => a !== id) : [...p.assets, id],
-    }));
-
-  const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
-  const prev = () => setStep((s) => Math.max(s - 1, 0));
-  const reset = () => { setInput(INITIAL_INPUT); setStep(0); };
-
-  const scrollToCalc = () => {
+  const scrollToCalc = useCallback(() => {
     calcRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  }, []);
 
   const canProceed = step === 0 ? !!input.websiteType : true;
   const isLastStep = step === STEPS.length - 1;
