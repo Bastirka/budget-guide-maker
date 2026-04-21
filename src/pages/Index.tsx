@@ -134,11 +134,12 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero */}
-      <Hero onStart={scrollToCalc} />
+      <main>
+        {/* Hero */}
+        <Hero onStart={scrollToCalc} />
 
-      {/* Calculator */}
-      <section ref={calcRef} className="relative pb-16 scroll-mt-20">
+        {/* Calculator */}
+        <section ref={calcRef} className="relative pb-16 scroll-mt-20" aria-label="Website price calculator">
         <div className="container max-w-7xl">
           <div className="grid lg:grid-cols-[1fr_440px] gap-6 lg:gap-8 items-start">
             {/* LEFT — STEPS */}
