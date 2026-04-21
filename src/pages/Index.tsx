@@ -207,29 +207,26 @@ const Index = () => {
                         <h2 className="font-display text-xl font-semibold mb-1">{t("step2.title")}</h2>
                         <p className="text-sm text-muted-foreground mb-5">{t("step2.subtitle")}</p>
                         <div className="space-y-5">
-                          {FEATURE_CATEGORIES.map((cat) => {
-                            const items = FEATURES.filter((f) => f.category === cat.id);
-                            return (
-                              <div key={cat.id}>
-                                <div className="flex items-center gap-2 mb-2.5">
-                                  <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
-                                    {t(cat.labelKey)}
-                                  </span>
-                                  <div className="flex-1 h-px bg-border" />
-                                </div>
-                                <div className="grid sm:grid-cols-2 gap-2">
-                                  {items.map((f) => (
-                                    <FeatureChip
-                                      key={f.id}
-                                      feature={f}
-                                      selected={input.features.includes(f.id)}
-                                      onToggle={() => toggleFeature(f.id)}
-                                    />
-                                  ))}
-                                </div>
+                          {FEATURES_BY_CATEGORY.map((cat) => (
+                            <div key={cat.id}>
+                              <div className="flex items-center gap-2 mb-2.5">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary">
+                                  {t(cat.labelKey)}
+                                </span>
+                                <div className="flex-1 h-px bg-border" />
                               </div>
-                            );
-                          })}
+                              <div className="grid sm:grid-cols-2 gap-2">
+                                {cat.items.map((f) => (
+                                  <FeatureChip
+                                    key={f.id}
+                                    feature={f}
+                                    selected={input.features.includes(f.id)}
+                                    onToggle={() => toggleFeature(f.id)}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
