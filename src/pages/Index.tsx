@@ -370,12 +370,12 @@ const Index = () => {
             </div>
 
             {/* RIGHT — RESULT */}
-            <div className="lg:sticky lg:top-24 space-y-4">
+            <aside className="lg:sticky lg:top-24 space-y-4" aria-label="Price estimate">
               <ResultPanel result={result} />
-            </div>
+            </aside>
           </div>
 
-          {/* LEAD FORM */}
+          {/* QUOTE REQUEST */}
           {result && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -383,7 +383,9 @@ const Index = () => {
               transition={{ duration: 0.5 }}
               className="mt-10 max-w-3xl mx-auto space-y-6"
             >
-              <QuoteRequestForm input={input} result={result} />
+              <Suspense fallback={<div className="glow-card rounded-2xl p-7 h-64 animate-pulse" />}>
+                <QuoteRequestForm input={input} result={result} />
+              </Suspense>
             </motion.div>
           )}
         </div>
