@@ -391,6 +391,7 @@ const Index = () => {
           )}
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="relative border-t border-border/60 py-6">
