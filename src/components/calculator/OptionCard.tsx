@@ -13,7 +13,7 @@ interface OptionCardProps {
   zeroLabel?: string;
 }
 
-export const OptionCard = ({
+const OptionCardImpl = ({
   selected,
   onClick,
   icon: Icon,
