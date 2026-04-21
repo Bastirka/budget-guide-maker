@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Rocket, Building2, UtensilsCrossed, Palette, ShoppingBag, CalendarCheck, Sparkles,
@@ -13,8 +13,11 @@ import { StepProgress } from "@/components/calculator/StepProgress";
 import { OptionCard } from "@/components/calculator/OptionCard";
 import { FeatureChip } from "@/components/calculator/FeatureChip";
 import { ResultPanel } from "@/components/calculator/ResultPanel";
+import { useSEO } from "@/hooks/useSEO";
 
-import { QuoteRequestForm } from "@/components/calculator/QuoteRequestForm";
+const QuoteRequestForm = lazy(() =>
+  import("@/components/calculator/QuoteRequestForm").then((m) => ({ default: m.QuoteRequestForm })),
+);
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useLanguage } from "@/i18n/LanguageContext";
