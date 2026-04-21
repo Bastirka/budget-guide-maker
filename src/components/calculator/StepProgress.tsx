@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 
@@ -7,31 +8,34 @@ interface StepProgressProps {
   onJump?: (id: number) => void;
 }
 
-export const StepProgress = ({ steps, current, onJump }: StepProgressProps) => {
-  const progress = ((current) / (steps.length - 1)) * 100;
+const StepProgressImpl = ({ steps, current, onJump }: StepProgressProps) => {
+  const progress = (current / (steps.length - 1)) * 100;
 
   return (
-    <div className="w-full">
+    <div className="w-full" role="group" aria-label="Calculator progress">
       {/* Bar */}
       <div className="relative h-1.5 bg-secondary rounded-full overflow-hidden mb-6">
         <motion.div
           className="absolute inset-y-0 left-0 bg-gradient-progress rounded-full"
-          initial={{ width: 0 }}
+          initial={false}
           animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.6, ease: [0.32, 0.72, 0, 1] }}
+          transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
         />
       </div>
 
       {/* Step pills */}
-      <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2">
+      <div className="flex items-center justify-between gap-2 overflow-x-auto pb-2 -mx-1 px-1">
         {steps.map((step) => {
           const done = step.id < current;
           const active = step.id === current;
           return (
             <button
               key={step.id}
+              type="button"
               onClick={() => onJump?.(step.id)}
-              className={`flex items-center gap-2 shrink-0 transition-all duration-300 ${
+              aria-current={active ? "step" : undefined}
+              aria-label={`Step ${step.id + 1}: ${step.label}`}
+              className={`flex items-center gap-2 shrink-0 transition-colors duration-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                 active
                   ? "text-foreground"
                   : done
@@ -60,3 +64,5 @@ export const StepProgress = ({ steps, current, onJump }: StepProgressProps) => {
     </div>
   );
 };
+
+export const StepProgress = memo(StepProgressImpl);
