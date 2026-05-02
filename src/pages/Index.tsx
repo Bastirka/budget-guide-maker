@@ -57,7 +57,7 @@ function toggleIn<T>(arr: T[], item: T): T[] {
 const Index = () => {
   useSEO();
   const { t } = useLanguage();
-  const [input, setInput] = useState<CalculatorInput>(INITIAL_INPUT);
+const [input, setInput] = useState<CalculatorInput>({ ...INITIAL_INPUT, packageTier: 'budget' as BudgetTier });
   const [step, setStep] = useState(0);
   const calcRef = useRef<HTMLElement>(null);
 
@@ -76,6 +76,10 @@ const Index = () => {
   );
 
   const result = useMemo(() => calculate(input), [input]);
+
+const handleSelectTier = useCallback((tier: BudgetTier) => {
+    setInput((prev) => ({ ...prev, packageTier: tier }));
+  }, []);
 
   const update = useCallback(
     <K extends keyof CalculatorInput>(key: K, value: CalculatorInput[K]) =>
@@ -372,7 +376,7 @@ const Index = () => {
 
             {/* RIGHT — RESULT */}
             <aside className="lg:sticky lg:top-24 space-y-4" aria-label="Price estimate">
-              <ResultPanel result={result} />
+              <ResultPanel result={result} input={input} onSelectTier={handleSelectTier} />
             </aside>
           </div>
 

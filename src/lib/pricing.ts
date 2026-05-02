@@ -178,18 +178,17 @@ export interface CalculatorInput {
   designLevel: DesignLevelId;
   urgency: UrgencyId;
   maintenance: MaintenanceId;
+  packageTier: BudgetTier;
 }
 
 export type BudgetTier = "budget" | "standard" | "advanced" | "premium";
 
-export type BreakdownItem =
-  | { kind: "base"; websiteType: WebsiteType; label: string; amount: string }
-  | { kind: "section"; id: SectionTierId; label: string; amount: number }
-  | { kind: "feature"; id: string; label: string; amount: number }
-  | { kind: "material"; id: MaterialId; label: string; amount: number }
-  | { kind: "design"; id: DesignLevelId; label: string; amount: number }
-  | { kind: "urgency"; id: UrgencyId; label: string; amount: number }
-  | { kind: "asset"; id: AssetId; label: string; amount: string };
+// Consolidated BreakdownItem for new logic
+export type BreakdownItem = {
+  kind: string;
+  label: string;
+  amount: number | string;
+};
 
 export interface CalculatorResult {
   base: PriceRange;
@@ -248,154 +247,141 @@ function tierFromAverage(avg: number): BudgetTier {
   return "premium";
 }
 
+export const PACKAGE_MULTIPLIERS: Record<BudgetTier, number> = {
+  budget: 1.0,
+  standard: 1.25,
+  advanced: 1.55,
+  premium: 1.9,
+};
+
+export const TIER_NEXT: Record<BudgetTier, BudgetTier> = {
+  budget: 'standard',
+  standard: 'advanced',
+  advanced: 'premium',
+  premium: 'premium',
+};
+
+export type BreakdownItem = 
+  | { kind: 'base'; label: string; amount: number; }
+  | { kind: 'package'; tier: BudgetTier; multiplier: number; amount: string; }
+  | { kind: 'addon'; label: string; amount: number; }
+  | { kind: 'discount'; label: string; amount: string; };
+
 export function calculate(input: CalculatorInput): CalculatorResult | null {
   if (!input.websiteType) return null;
 
   const typeDef = WEBSITE_TYPES[input.websiteType];
-  const base = { ...typeDef.range };
+  const baseMid = Math.round((typeDef.range.min + typeDef.range.max) / 2);
 
-  let addons = 0;
+  let subtotal = baseMid;
   const breakdown: BreakdownItem[] = [
-    { kind: "base", websiteType: input.websiteType, label: `${typeDef.label} (bāzes diapazons)`, amount: `${base.min}–${base.max}€` },
+    { kind: 'base', label: typeDef.label, amount: baseMid },
   ];
 
-  // Sadaļas
-  const sec = SECTION_TIERS.find((s) => s.id === input.sectionTier);
-  if (sec && sec.price > 0) {
-    addons += sec.price;
-    breakdown.push({ kind: "section", id: sec.id, label: sec.label, amount: sec.price });
+  // Sections
+  const sec = SECTION_TIERS.find(s => s.id === input.sectionTier);
+  if (sec?.price) {
+    subtotal += sec.price;
+    breakdown.push({ kind: 'addon', label: sec.label, amount: sec.price });
   }
 
-  // Funkcijas
-  const selectedFeatures = FEATURES.filter((f) => input.features.includes(f.id));
-  for (const f of selectedFeatures) {
-    addons += f.price;
-    breakdown.push({ kind: "feature", id: f.id, label: f.label, amount: f.price });
-  }
+  // Features
+  const featureTotal = input.features.reduce((sum, fid) => {
+    const f = FEATURES.find(f => f.id === fid);
+    return f ? sum + f.price : sum;
+  }, 0);
+  subtotal += featureTotal;
+  breakdown.push({ kind: 'addon', label: 'Funkcijas', amount: featureTotal });
 
-  // Materiāli — "all" pārraksta atsevišķos
-  let mats = input.materials;
-  if (mats.includes("all")) mats = ["all"];
-  for (const id of mats) {
-    const m = MATERIALS.find((x) => x.id === id);
-    if (m && m.price > 0) {
-      addons += m.price;
-      breakdown.push({ kind: "material", id: m.id, label: `Materiāli: ${m.label}`, amount: m.price });
-    }
-  }
+  // Materials
+  let materialTotal = 0;
+  if (input.materials.includes('all')) materialTotal = 70;
+  else input.materials.forEach(id => {
+    const m = MATERIALS.find(m => m.id === id);
+    if (m) materialTotal += m.price;
+  });
+  subtotal += materialTotal;
+  breakdown.push({ kind: 'addon', label: 'Materiāli', amount: materialTotal });
 
-  // Dizains
-  const design = DESIGN_LEVELS.find((d) => d.id === input.designLevel);
-  if (design && design.price > 0) {
-    addons += design.price;
-    breakdown.push({ kind: "design", id: design.id, label: `Dizains: ${design.label}`, amount: design.price });
-  }
+  // Design
+  const design = DESIGN_LEVELS.find(d => d.id === input.designLevel);
+  const designTotal = design?.price || 0;
+  subtotal += designTotal;
+  breakdown.push({ kind: 'addon', label: 'Dizains', amount: designTotal });
 
-  // Steidzamība
-  const urg = URGENCY_LEVELS.find((u) => u.id === input.urgency);
-  if (urg && urg.price > 0) {
-    addons += urg.price;
-    breakdown.push({ kind: "urgency", id: urg.id, label: urg.label, amount: urg.price });
-  }
+  // Urgency
+  const urg = URGENCY_LEVELS.find(u => u.id === input.urgency);
+  const urgencyTotal = urg?.price || 0;
+  subtotal += urgencyTotal;
+  breakdown.push({ kind: 'addon', label: 'Steidzamība', amount: urgencyTotal });
 
-  // Atlaide par materiāliem, kas klientam jau ir
-  let discounts = 0;
-  for (const id of input.assets) {
-    const a = ASSETS.find((x) => x.id === id);
-    if (a) {
-      discounts += a.discount;
-      breakdown.push({ kind: "asset", id: a.id, label: `Ir ${a.label.toLowerCase().replace("ir ", "")}`, amount: `−${a.discount}€` });
-    }
-  }
+  // Discounts
+  const discountTotal = input.assets.reduce((sum, aid) => {
+    const a = ASSETS.find(a => a.id === aid);
+    return a ? sum + a.discount : sum;
+  }, 0);
+  subtotal -= discountTotal;
+  breakdown.push({ kind: 'discount', label: 'Atlaides', amount: `-${discountTotal}€` });
 
-  // === IEKŠĒJĀS cenas (raw) — netiek rādītas klientam ===
-  const internalMin = Math.max(50, base.min + addons - discounts);
-  const internalMax = Math.max(60, base.max + addons - discounts);
-  const internalAvg = Math.round((internalMin + internalMax) / 2);
-  const internalPrice = internalAvg;
+  // Package multiplier
+  const multiplier = PACKAGE_MULTIPLIERS[input.packageTier || 'budget'];
+  const average = Math.round(subtotal * multiplier);
+  breakdown.push({ kind: 'package', tier: input.packageTier || 'budget', multiplier, amount: `x${multiplier.toFixed(2)}` });
 
-  // === KLIENTA cenas (ar multiplier) — TĀS RĀDA UI ===
-  const range: PriceRange = {
-    min: Math.round(internalMin * PRICE_MULTIPLIER),
-    max: Math.round(internalMax * PRICE_MULTIPLIER),
-  };
-  const average = Math.round(internalAvg * PRICE_MULTIPLIER);
+  // Recommended (next tier)
+  const recTier = TIER_NEXT[input.packageTier || 'budget'];
+  const recMultiplier = PACKAGE_MULTIPLIERS[recTier];
+  const recommended = Math.round(subtotal * recMultiplier);
+  const recDiff = recommended - average;
 
-  // Recommended package — nedaudz dārgāks "Labākā izvēle" variants
-  const recommended = Math.round(average * RECOMMENDED_MULTIPLIER);
+  // Range (current ±10%)
+  const rangeMin = Math.round(average * 0.9);
+  const rangeMax = Math.round(average * 1.1);
 
-  // Tipiska tirgus cena — nedaudz plašāks "trust" diapazons (±15%)
-  const marketRange: PriceRange = {
-    min: Math.round(range.min * 0.92),
-    max: Math.round(range.max * 1.18),
-  };
+  // Market (±50-180%)
+  const marketMin = Math.round(average * 1.4);
+  const marketMax = Math.round(average * 2.8);
 
-  const tier = tierFromAverage(average);
-  const tierInfo = TIER_INFO[tier];
+  const tierInfo = TIER_INFO[input.packageTier || 'budget'];
 
-  // Iekšējie aprēķini (no IEKŠĒJĀS cenas, lai peļņa ir reālistiska)
-  const cost = Math.round(internalPrice * COST_RATIO);
-  // Peļņa = klienta cena - mūsu izmaksas
-  const profit = average - cost;
+  // Admin (commented)
+  // const cost = Math.round((average / PRICE_MULTIPLIER) * COST_RATIO);
+  // const profit = average - cost;
 
-  // Uzturēšana (atsevišķa mēneša maksa)
-  const maint = MAINTENANCE_LEVELS.find((m) => m.id === input.maintenance);
-  const monthlyMaintenance = maint?.monthly ?? 0;
+  const maint = MAINTENANCE_LEVELS.find(m => m.id === input.maintenance);
+  const monthlyMaintenance = maint?.monthly || 0;
 
-  // Ieteikumi — kā samazināt (cenas klientam = ×2)
-  const suggestionsCheaper: string[] = [];
-  if (input.designLevel === "custom") suggestionsCheaper.push("Izvēlieties Premium dizainu, nevis Custom — ietaupījums ~100€");
-  else if (input.designLevel === "premium") suggestionsCheaper.push("Modernais dizains tā vietā ietaupīs ~94€");
+  const suggestionsCheaper = [
+    input.designLevel === 'custom' ? 'Premium dizains ietaupa ~130€' : '',
+    input.urgency === 'asap' ? 'Normāls termiņš ietaupa ~100€' : '',
+  ].filter(Boolean).slice(0,4);
 
-  if (input.urgency === "asap") suggestionsCheaper.push("Ja varat pagaidīt 2 nedēļas — ietaupījums ~134€");
-  else if (input.urgency === "urgent") suggestionsCheaper.push("Normāls termiņš ietaupīs ~140€");
-
-  if (selectedFeatures.length > 5)
-    suggestionsCheaper.push(`Jums ir ${selectedFeatures.length} funkcijas — apsveriet sākumā tikai būtiskākās`);
-
-  if (input.materials.includes("all"))
-    suggestionsCheaper.push("Ja sagādāsiet daļu materiālu paši (piem. fotos) — ietaupījums līdz ~54€");
-
-  if (input.sectionTier === "10+") suggestionsCheaper.push("Mazāk sadaļu (4–6) ietaupīs ~140€");
-
-  // Ieteikumi — kā uzlabot
-  const suggestionsBetter: string[] = [];
-  const has = (id: string) => input.features.includes(id);
-  if (!has("seo"))
-    suggestionsBetter.push("Pievienojiet SEO optimizāciju — bez tā Google jūs neatradīs");
-  if (!has("contact_form"))
-    suggestionsBetter.push("Kontaktu forma — vienkāršākais veids saņemt pieprasījumus");
-  if (!has("whatsapp"))
-    suggestionsBetter.push("WhatsApp poga — klienti raksta tieši, nevis aiziet");
-  if (input.designLevel === "simple")
-    suggestionsBetter.push("Modernais dizains — pirmais iespaids ir izšķirošs");
-  if (input.websiteType === "ecommerce" && !has("payments"))
-    suggestionsBetter.push("Maksājumu integrācija — bez tā e-veikals nestrādās");
-  if (input.websiteType === "booking" && !has("booking_form"))
-    suggestionsBetter.push("Rezervāciju forma — booking sistēmas pamats");
-  if (!has("performance"))
-    suggestionsBetter.push("Performance optimizācija — ātrāka lapa = vairāk klientu");
+  const suggestionsBetter = [
+    !input.features.includes('seo') ? 'Pievienojiet SEO' : '',
+    input.designLevel === 'simple' ? 'Modern dizains' : '',
+  ].filter(Boolean).slice(0,4);
 
   return {
-    base,
-    addons,
-    discounts,
-    range,
+    base: typeDef.range,
+    addons: subtotal - baseMid,
+    discounts: discountTotal,
+    range: { min: rangeMin, max: rangeMax },
     average,
     recommended,
-    marketRange,
-    tier,
+    marketRange: { min: marketMin, max: marketMax },
+    tier: input.packageTier || 'budget' as BudgetTier,
     tierLabel: tierInfo.label,
     tierDescription: tierInfo.description,
-    cost,
-    profit,
-    internalPrice,
+    cost: 0, // hidden
+    profit: 0, // hidden
+    internalPrice: 0, // hidden
     monthlyMaintenance,
     breakdown,
-    suggestionsCheaper: suggestionsCheaper.slice(0, 4),
-    suggestionsBetter: suggestionsBetter.slice(0, 4),
+    suggestionsCheaper,
+    suggestionsBetter,
   };
 }
+
 
 export const INITIAL_INPUT: CalculatorInput = {
   websiteType: null,
@@ -406,4 +392,5 @@ export const INITIAL_INPUT: CalculatorInput = {
   designLevel: "simple",
   urgency: "normal",
   maintenance: "none",
+  packageTier: "budget" as BudgetTier,
 };

@@ -68,21 +68,36 @@ export const QuoteRequestForm = ({ input, result }: QuoteRequestFormProps) => {
       return;
     }
 
-    const payload = {
-      name: parsed.data.name,
-      businessName: parsed.data.businessName ?? "",
-      email: parsed.data.email ?? "",
-      phone: parsed.data.phone,
-      notes: parsed.data.notes ?? "",
-      projectType: input.websiteType ?? "",
-      designLevel: input.designLevel,
-      pages: input.sectionTier,
-      languages: "",
+const pkgDef = PACKAGE_DEFINITIONS[input.packageTier || 'budget'];
+  const recPkg = PACKAGE_DEFINITIONS[TIER_NEXT[input.packageTier || 'budget']];
+  const reasons = getPackageReason(input.websiteType, input);
+  const payload = {
+    name: parsed.data.name,
+    businessName: parsed.data.businessName ?? "",
+    email: parsed.data.email ?? "",
+    phone: parsed.data.phone,
+    notes: parsed.data.notes ?? "",
+    projectType: input.websiteType ?? "Nav norādīts",
+    packageTier: input.packageTier || 'budget',
+    recommendedPackage: recPkg.id,
+    finalPrice: result.average,
+    recommendedPrice: result.recommended,
+    priceDiff: result.recommended - result.average,
+    includedCategories: pkgDef.includedCategoriesLV, // LV default
+    includedItems: pkgDef.includedItemsLV,
+    recommendationReasons: reasons,
+    basePrice: result.base.min + (result.base.max - result.base.min) / 2,
+    multiplier: PACKAGE_MULTIPLIERS[input.packageTier || 'budget'],
+    answers: {
+      sections: input.sectionTier,
       features: input.features,
-      extras: [...input.materials, ...input.assets],
-      timeline: input.urgency,
-      estimatedPrice: result.average,
-    };
+      materials: input.materials,
+      assets: input.assets,
+      design: input.designLevel,
+      urgency: input.urgency,
+      maintenance: input.maintenance,
+    },
+  };
 
     setStatus("loading");
     setErrorMsg("");
